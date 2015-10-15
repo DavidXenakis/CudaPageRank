@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class PageRank {
 	private static final double d = .6;
@@ -9,7 +10,15 @@ public class PageRank {
 	public PageRank(ArrayList<Node> graph) {
 		this.graph = graph;
 		pageRank = new HashMap<Node, Double>();
+		size = graph.size();
 	}
+	
+	public void printPageRanks() {
+		for(Entry<Node, Double> entry : pageRank.entrySet()) {
+			System.out.println(entry.getValue());
+		}
+	}
+	
 	public void getPageRanks() {
 		for(int i = 0; i < graph.size(); i++) {
 			Node node = graph.get(i);
@@ -17,7 +26,9 @@ public class PageRank {
 				System.out.println("Converged");
 				return;
 			}
-			pageRank.put(node, pageRank(node));
+			double num = pageRank(node);
+			node.pageRank = num;
+			pageRank.put(node, num);
 		}
 	}
 	private double pageRank(Node node) {
