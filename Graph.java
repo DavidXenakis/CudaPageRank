@@ -32,7 +32,7 @@ public class Graph {
 		   ArrayList<Node> printNodes = new ArrayList<Node>(Edges.values());
 		   System.out.print(element + "'s " + "nodes: ");
 		   for (Node node : printNodes) {
-			   System.out.print(node + " ");
+			   System.out.print(node + ", ");
 		   }
 		   System.out.println();
 	   }
@@ -80,7 +80,7 @@ public class Graph {
 		    	return;
 		    }
 			
-			stringScan.useDelimiter(",");
+			stringScan.useDelimiter(",\\s");
 			
 			nodeEle = stringScan.next();
 			if(nodeEle.charAt(0) == '"')
