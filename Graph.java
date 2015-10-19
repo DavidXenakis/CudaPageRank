@@ -24,6 +24,17 @@ public class Graph {
 		   return element.hashCode();
 	   }
 	   
+	   //Need this if you override hashCode
+	   public boolean equals(Object obj) {
+		   if(obj instanceof Node) {
+			   Node obj1 = (Node) obj;
+			   return obj1.element == this.element;
+		   } else {
+			   return false;
+		   }
+		   
+	   }
+	   
 	   public void addEdge(Node newNode) {
 		   Edges.put(newNode.toString(), newNode);
 	   }
