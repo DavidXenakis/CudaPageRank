@@ -3,15 +3,21 @@ import java.io.*;
 
 public class Graph {
 	public HashMap<String, Node> nodes;
+	public boolean undirected;
 	
 	public class Node {
 		HashMap<String, Node> Edges;
 		String element;
-		int value;
+		int value = 0;
 		
 		public Node(String element, int value) {
 			this.element = element;
 			this.value = value;
+			Edges = new HashMap<String, Node>();
+		}
+		
+		public Node(String element) {
+			this.element = element;
 			Edges = new HashMap<String, Node>();
 		}
 		
@@ -52,11 +58,24 @@ public class Graph {
 	
 	//Currently just call the constructor with the file, only works with csv 
 	@SuppressWarnings("resource")
-	public Graph(String fileName) {
+	public Graph(String fileName, boolean undirected) {
 		nodes = new HashMap<String, Node>();
-		
-		File file = null;
+		this.undirected = undirected;
 		String fileType = fileName.substring(fileName.length() - 3, fileName.length());
+		
+		if(fileType.compareTo("csv") == 0){
+			scanCSV(new File(fileName));
+		}
+		else if(fileType.compareTo("txt") == 0) {
+			scanSNAP(new File(fileName));
+		}
+		else {
+			System.out.println("File type not supported yet");
+			return;
+		}
+	}
+	
+	void scanCSV(File file) {
 		Scanner lineScan = null;
 		Scanner stringScan = null;
 		String nodeEle = null;
@@ -64,15 +83,6 @@ public class Graph {
 		Node fromNode;
 		Node toNode;
 		
-		
-		if(fileType.compareTo("csv") == 0){
-			file = new File(fileName);
-		}
-		else {
-			System.out.println("File type not supported yet");
-			return;
-		}
-			
 		try {
 			lineScan = new Scanner(file); 
 	    }
@@ -91,7 +101,7 @@ public class Graph {
 		    	return;
 		    }
 			
-			stringScan.useDelimiter(",\\s");
+			stringScan.useDelimiter("[,\\s]+");
 			
 			nodeEle = stringScan.next();
 			if(nodeEle.charAt(0) == '"')
@@ -119,16 +129,86 @@ public class Graph {
 				stringScan.next();
 			
 			fromNode.addEdge(toNode);
+			if(undirected)
+				toNode.addEdge(fromNode);
+			
 			if(!nodes.containsKey(fromNode.toString())) {
 				nodes.put(fromNode.toString(), fromNode);
 			}
 			
+			if(undirected && !nodes.containsKey(toNode.toString())) {
+				nodes.put(toNode.toString(), toNode);
+			}
+			
 		}
+
 		
-//		ArrayList<Node> printNodes = new ArrayList<Node>(nodes.values());
-//	    for (Node node : printNodes) {
-//	    	node.printEdges();
-//	    }
+		lineScan.close();
+		stringScan.close();
+	}
+
+	void scanSNAP(File file) {
+		Scanner lineScan = null;
+		Scanner stringScan = null;
+		String nodeEle = null;
+		int nodeVal = 0; 
+		Node fromNode;
+		Node toNode;
+		
+		try {
+			lineScan = new Scanner(file); 
+	    }
+	    catch(Exception e) {
+	    	System.err.println(e.getMessage());
+	    	return;
+	    }
+		
+		lineScan.useDelimiter("\n");
+		
+		while(lineScan.hasNext()) {
+			try {
+				stringScan = new Scanner(lineScan.next()); 
+		    }
+		    catch(Exception e) {
+		    	System.err.println(e.getMessage());
+		    	return;
+		    }
+			
+			stringScan.useDelimiter("[\\s]+");
+			nodeEle = stringScan.next();
+			if(nodeEle.charAt(0) == '#')
+				continue;
+			
+			if(nodes.containsKey(nodeEle))
+				fromNode = nodes.get(nodeEle);
+			else
+				fromNode = new Node(nodeEle);
+			
+			
+			nodeEle = stringScan.next();
+			
+			if(nodes.containsKey(nodeEle))
+				toNode = nodes.get(nodeEle);
+			else
+				toNode = new Node(nodeEle);
+			
+			//just getting rid of the 5th parm for now
+			if(stringScan.hasNext()) 
+				stringScan.next();
+			
+			fromNode.addEdge(toNode);
+			if(undirected)
+				toNode.addEdge(fromNode);
+			
+			if(!nodes.containsKey(fromNode.toString())) {
+				nodes.put(fromNode.toString(), fromNode);
+			}
+			
+			if(undirected && !nodes.containsKey(toNode.toString())) {
+				nodes.put(toNode.toString(), toNode);
+			}
+			
+		}
 
 		
 		lineScan.close();
@@ -136,5 +216,11 @@ public class Graph {
 	}
 	
 	
+	void printGraph() {
+		ArrayList<Node> printNodes = new ArrayList<Node>(nodes.values());
+	    for (Node node : printNodes) {
+	    	node.printEdges();
+	    }
+	}
 	
 }
