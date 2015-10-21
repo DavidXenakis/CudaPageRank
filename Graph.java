@@ -4,63 +4,15 @@ import java.io.*;
 public class Graph {
 	public HashMap<String, Node> nodes;
 	public boolean undirected;
-	
-	public class Node {
-		HashMap<String, Node> Edges;
-		String element;
-		int value = 0;
-		
-		public Node(String element, int value) {
-			this.element = element;
-			this.value = value;
-			Edges = new HashMap<String, Node>();
-		}
-		
-		public Node(String element) {
-			this.element = element;
-			Edges = new HashMap<String, Node>();
-		}
-		
-	   public String toString() {
-		   return element;
-	   }
-	   
-	   //Something goes wrong with this hashCode when a Node is used for the HashMap
-	   public int hashCode() {
-		   return element.hashCode();
-	   }
-	   
-	   //Need this if you override hashCode
-	   public boolean equals(Object obj) {
-		   if(obj instanceof Node) {
-			   Node obj1 = (Node) obj;
-			   return obj1.element == this.element;
-		   } else {
-			   return false;
-		   }
-		   
-	   }
-	   
-	   public void addEdge(Node newNode) {
-		   Edges.put(newNode.toString(), newNode);
-	   }
-	   
-	   public void printEdges() {
-		   ArrayList<Node> printNodes = new ArrayList<Node>(Edges.values());
-		   System.out.print(element + "'s " + "nodes: ");
-		   for (Node node : printNodes) {
-			   System.out.print(node + ", ");
-		   }
-		   System.out.println();
-	   }
-	}
+	public boolean invert;
 	
 	
 	//Currently just call the constructor with the file, only works with csv 
 	@SuppressWarnings("resource")
-	public Graph(String fileName, boolean undirected) {
+	public Graph(String fileName, boolean undirected, boolean invert) {
 		nodes = new HashMap<String, Node>();
 		this.undirected = undirected;
+		this.invert = invert;
 		String fileType = fileName.substring(fileName.length() - 3, fileName.length());
 		
 		if(fileType.compareTo("csv") == 0){
@@ -80,8 +32,8 @@ public class Graph {
 		Scanner stringScan = null;
 		String nodeEle = null;
 		int nodeVal = 0; 
-		Node fromNode;
-		Node toNode;
+		Node fromNode = null;
+		Node toNode = null;
 		
 		try {
 			lineScan = new Scanner(file); 
@@ -101,17 +53,26 @@ public class Graph {
 		    	return;
 		    }
 			
-			stringScan.useDelimiter("[,\\s]+");
+			stringScan.useDelimiter(", +");
 			
 			nodeEle = stringScan.next();
 			if(nodeEle.charAt(0) == '"')
 				nodeEle = nodeEle.substring(1, nodeEle.length() - 1);
 			nodeVal = stringScan.nextInt();
 			
-			if(nodes.containsKey(nodeEle))
-				fromNode = nodes.get(nodeEle);
-			else
-				fromNode = new Node(nodeEle, nodeVal);
+			if(nodes.containsKey(nodeEle)) {
+				if(invert) {
+					toNode = nodes.get(nodeEle);
+				} else {
+					fromNode = nodes.get(nodeEle);
+				}
+			} else {
+				if(invert) {
+					toNode = new Node(nodeEle, nodeVal);
+				} else {
+					fromNode = new Node(nodeEle, nodeVal);
+				}
+			}
 			
 			
 			nodeEle = stringScan.next();
@@ -119,18 +80,30 @@ public class Graph {
 				nodeEle = nodeEle.substring(1, nodeEle.length() - 1);
 			nodeVal = stringScan.nextInt();
 			
-			if(nodes.containsKey(nodeEle))
-				toNode = nodes.get(nodeEle);
-			else
-				toNode = new Node(nodeEle, nodeVal);
+			if(nodes.containsKey(nodeEle)) {
+				if(invert) {
+					fromNode = nodes.get(nodeEle);
+				} else {
+					toNode = nodes.get(nodeEle);
+				}
+			}else {
+				if(invert) {
+					fromNode =  new Node(nodeEle, nodeVal);
+				} else {
+					toNode =  new Node(nodeEle, nodeVal);
+				}
+			}
 			
 			//just getting rid of the 5th parm for now
 			if(stringScan.hasNext()) 
 				stringScan.next();
 			
-			fromNode.addEdge(toNode);
-			if(undirected)
-				toNode.addEdge(fromNode);
+			fromNode.addOutlink(toNode);
+			toNode.addInlink(fromNode);
+			if(undirected) {
+				toNode.addOutlink(fromNode);
+				fromNode.addInlink(toNode);
+			}
 			
 			if(!nodes.containsKey(fromNode.toString())) {
 				nodes.put(fromNode.toString(), fromNode);
@@ -196,9 +169,12 @@ public class Graph {
 			if(stringScan.hasNext()) 
 				stringScan.next();
 			
-			fromNode.addEdge(toNode);
-			if(undirected)
-				toNode.addEdge(fromNode);
+			fromNode.addOutlink(toNode);
+			toNode.addInlink(fromNode);
+			if(undirected) {
+				toNode.addOutlink(fromNode);
+				fromNode.addInlink(toNode);
+			}
 			
 			if(!nodes.containsKey(fromNode.toString())) {
 				nodes.put(fromNode.toString(), fromNode);
@@ -219,7 +195,7 @@ public class Graph {
 	void printGraph() {
 		ArrayList<Node> printNodes = new ArrayList<Node>(nodes.values());
 	    for (Node node : printNodes) {
-	    	node.printEdges();
+	    	//node.printEdges();
 	    }
 	}
 	
