@@ -199,4 +199,13 @@ public class Graph {
 	    }
 	}
 	
+	public int size() {
+		return nodes.size();
+	}
+	
+	public Node get(String str) {
+		return nodes.get(str);
+	}
+
+	
 }

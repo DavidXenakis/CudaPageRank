@@ -9,6 +9,9 @@ public class Main {
 		for(Node node1 : graph.nodes.get("Northeastern").outlinks) {
 			System.out.println(node1.element);
 		}
+		PageRank pageRank = new PageRank(graph);
+		pageRank.getPageRanks();
+		pageRank.printPageRanks();
 //		ArrayList<Node> graph = new ArrayList<Node>();
 //		PageRank pageRank = null;
 //		graph.add(new Node());

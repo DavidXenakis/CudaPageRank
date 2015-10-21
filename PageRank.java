@@ -1,27 +1,29 @@
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class PageRank {
 	private static final double d = .6;
-	private ArrayList<Node> graph  = null;
+	private Graph graph  = null;
 	private HashMap<Node, Double> pageRank = null;
 	private int size;
-	public PageRank(ArrayList<Node> graph) {
+	public PageRank(Graph graph) {
 		this.graph = graph;
 		pageRank = new HashMap<Node, Double>();
-		size = graph.size();
+		size = graph.nodes.size();
 	}
 	
 	public void printPageRanks() {
 		for(Entry<Node, Double> entry : pageRank.entrySet()) {
-			System.out.println(entry.getValue());
+			System.out.println(entry.getKey().element + " : " + entry.getKey().inlinks.size() + " " + entry.getValue());
 		}
 	}
 	
 	public void getPageRanks() {
-		for(int i = 0; i < graph.size(); i++) {
-			Node node = graph.get(i);
+		Collection<Node> entries = graph.nodes.values();
+		for(Node node : entries) {
 			if(pageRank.get(node) != null) {
 				System.out.println("Converged");
 				return;
@@ -32,13 +34,22 @@ public class PageRank {
 		}
 	}
 	private double pageRank(Node node) {
+		double newPagerank = 1.0 / size;
+		if(pageRank.get(node) == null) {
+			pageRank.put(node, 1.0 / size);
+		} else {
+			System.out.println("HERE");
+		}
 		double sum = 0.0;
-		if(node.outlinks.size() == 0) {
-			return 1 / size;
+		int i = 0;
+		if(node.inlinks.size() > 0) {
+			do {
+				sum += (1.0 / node.inlinks.get(i).outlinks.size()) * pageRank(node.inlinks.get(i));
+				newPagerank = (1 - d) * (1.0 / size) + d * sum;
+				i++;
+			} while((newPagerank - pageRank.get(node)) >= 0.0015 && i < node.inlinks.size()-1);
 		}
-		for(Node inlink : node.inlinks) {
-			sum += (1 / inlink.outlinks.size()) * pageRank(inlink);
-		}
-		return (1 - d) * (1 / size) + d * sum;
+		
+		return newPagerank;
 	}
 }
