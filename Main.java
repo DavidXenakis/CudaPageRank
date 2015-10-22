@@ -4,11 +4,8 @@ import java.util.ArrayList;
 
 public class Main {
 	public static void main(String args[]) {
-		Graph graph = new Graph("football.csv", false, true);
+		Graph graph = new Graph("example.csv", false, false);
 		Node node = new Node("Buffalo");
-		for(Node node1 : graph.nodes.get("Northeastern").outlinks) {
-			System.out.println(node1.element);
-		}
 		PageRank pageRank = new PageRank(graph);
 		pageRank.getPageRanks();
 		pageRank.printPageRanks();
