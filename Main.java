@@ -4,14 +4,13 @@ import java.util.ArrayList;
 
 public class Main {
 	public static void main(String args[]) {
-		Graph graph = new Graph("example.csv", false, false);
-		Node node = new Node("Buffalo");
+		Graph graph = new Graph("football.csv", false, true);
 		PageRank pageRank = new PageRank(graph);
 		pageRank.getPageRanks();
 		pageRank.printPageRanks();
 //		ArrayList<Node> graph = new ArrayList<Node>();
 //		PageRank pageRank = null;
-//		graph.add(new Node());
+//		graph.add(new Node()s);
 //		for(int i = 0; i < 10; i++) {
 //			Node node1 = graph.get(0);
 //			Node node2 = new Node();
