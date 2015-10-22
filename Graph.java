@@ -5,35 +5,41 @@ public class Graph {
 	public HashMap<String, Node> nodes;
 	public boolean undirected;
 	public boolean invert;
-	
+	public long time;
 	
 	//Currently just call the constructor with the file, only works with csv 
 	@SuppressWarnings("resource")
 	public Graph(String fileName, boolean undirected, boolean invert) {
+		time = System.currentTimeMillis();
 		nodes = new HashMap<String, Node>();
 		this.undirected = undirected;
 		this.invert = invert;
 		String fileType = fileName.substring(fileName.length() - 3, fileName.length());
 		
 		if(fileType.compareTo("csv") == 0){
-			scanCSV(new File(fileName));
+			scanCSV(fileName);
 		}
 		else if(fileType.compareTo("txt") == 0) {
-			scanSNAP(new File(fileName));
+			scanSNAP(fileName);
 		}
 		else {
 			System.out.println("File type not supported yet");
 			return;
 		}
+		time = System.currentTimeMillis() - time;
+//		time /= 1000.0;
+		System.out.println("Graph creation took " + time + " milliseconds");
 	}
 	
-	void scanCSV(File file) {
+	void scanCSV(String fileName) {
 		Scanner lineScan = null;
 		Scanner stringScan = null;
 		String nodeEle = null;
 		int nodeVal = 0; 
 		Node fromNode = null;
 		Node toNode = null;
+		File file = new File(fileName);
+		String delimit = "[, ]+";
 		
 		try {
 			lineScan = new Scanner(file); 
@@ -42,6 +48,29 @@ public class Graph {
 	    	System.err.println(e.getMessage());
 	    	return;
 	    }
+		
+		if(fileName.equals("stateborders.csv")) {
+			undirected = true;
+		}
+		if(fileName.equals("karate.csv")) {
+			undirected = true;
+		}
+		if(fileName.equals("dolphins.csv")) {
+			undirected = true;
+		}
+		if(fileName.equals("football.csv")) {
+			undirected = false;
+			invert = true;
+			delimit = ", ";
+		}
+		if(fileName.equals("lesmis.csv")) {
+			undirected = true;
+		}
+		if(fileName.equals("polblogs.csv")) {
+			undirected = false;
+		}
+		
+		
 		
 		lineScan.useDelimiter("\n");
 		while(lineScan.hasNext()) {
@@ -53,7 +82,7 @@ public class Graph {
 		    	return;
 		    }
 			
-			stringScan.useDelimiter(", +");
+			stringScan.useDelimiter(delimit);
 			
 			nodeEle = stringScan.next();
 			if(nodeEle.charAt(0) == '"')
@@ -124,13 +153,13 @@ public class Graph {
 		stringScan.close();
 	}
 
-	void scanSNAP(File file) {
+	void scanSNAP(String fileName) {
 		Scanner lineScan = null;
 		Scanner stringScan = null;
 		String nodeEle = null;
-		int nodeVal = 0; 
 		Node fromNode;
 		Node toNode;
+		File file = new File(fileName);
 		
 		try {
 			lineScan = new Scanner(file); 
