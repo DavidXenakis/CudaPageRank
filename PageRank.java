@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -11,6 +13,7 @@ public class PageRank {
 	private HashMap<Node, Double> pageRank = new HashMap<Node, Double>();
 	private HashMap<Node, Integer> r = new HashMap<Node, Integer>();
 	private int size;
+	public int numIter = 0;
 	public PageRank(Graph graph) {
 		this.graph = graph;
 		pageRank2 = new HashMap<Node, Double>();
@@ -33,8 +36,25 @@ public class PageRank {
 	}
 	
 	public void printPageRanks() {
+		ArrayList<Node> nodes = new ArrayList<Node>();
 		for(Entry<Node, Double> entry : pageRank.entrySet()) {
-			System.out.println(entry.getKey().element + " : " + entry.getKey().inlinks.size() + " " + entry.getValue());
+			nodes.add(entry.getKey());
+		}
+		Collections.sort(nodes, new Comparator<Node>() {
+
+			@Override
+			public int compare(Node o1, Node o2) {
+				if(o1.pageRank < o2.pageRank) {
+					return 1;
+				} else {
+					return -1;
+				}
+			}
+			
+		});
+		int i = 1;
+		for(Node node : nodes) {
+			System.out.println(i++ + " obj: " + node.element + " with pagerank: " + node.pageRank);
 		}
 	}
 	
@@ -56,15 +76,17 @@ public class PageRank {
 		double newSum = 0.0;
 		boolean firstIter = true;
 		while(!done) {
+			numIter++;
 			oldSum = 0.0;
 			newSum = 0.0;
 			for(Node node : entries) {
 				double num = pageRank(node);
 				newSum += num;
 				oldSum += pageRank.get(node);
+				node.pageRank = num;
 				pageRank.put(node, num);
 			}
-			if(Math.abs(newSum - oldSum) < 0.001 && !firstIter) {
+			if(Math.abs(newSum - oldSum) < 0.0001 && !firstIter) {
 				done = true;
 			}
 			firstIter = false;
@@ -102,8 +124,6 @@ public class PageRank {
 			sum += (1.0 / node.inlinks.get(i).outlinks.size()) * pageRank2(node.inlinks.get(i));
 		}
 		newPagerank = (1 - d) * (1.0 / size) + d * sum;
-		
-		//newPagerank = (1 - d) + d * sum;
 		
 		return newPagerank;
 	}	

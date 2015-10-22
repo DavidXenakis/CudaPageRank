@@ -213,7 +213,7 @@ public class Graph {
 				nodes.put(fromNode.toString(), fromNode);
 			}
 			
-			if(undirected && !nodes.containsKey(toNode.toString())) {
+			if(!nodes.containsKey(toNode.toString())) {
 				nodes.put(toNode.toString(), toNode);
 			}
 			
