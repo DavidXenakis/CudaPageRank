@@ -4,11 +4,12 @@ import java.util.ArrayList;
 
 public class Main {
 	public static void main(String args[]) {
-		Graph graph = new Graph("wiki-Vote.txt", true, false);
+		Graph graph = new Graph("football.csv", true, false);
 		PageRank pageRank = new PageRank(graph);
 		pageRank.getPageRanks();
 		pageRank.printPageRanks();
 		System.out.println("Num Iterations: " + pageRank.numIter);
+		System.out.println("Processing Time: " + pageRank.processingTime() + " milliseconds");
 //		ArrayList<Node> graph = new ArrayList<Node>();
 //		PageRank pageRank = null;
 //		graph.add(new Node()s);

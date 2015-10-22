@@ -13,6 +13,8 @@ public class PageRank {
 	private HashMap<Node, Double> pageRank = new HashMap<Node, Double>();
 	private HashMap<Node, Integer> r = new HashMap<Node, Integer>();
 	private int size;
+	private long startTime = 0;
+	private long endTime = 0;
 	public int numIter = 0;
 	public PageRank(Graph graph) {
 		this.graph = graph;
@@ -69,8 +71,13 @@ public class PageRank {
 		
 	}
 	
+	public long processingTime() {
+		return endTime - startTime;
+	}
+	
 	public void getPageRanks() {
 		Collection<Node> entries = graph.nodes.values();
+		startTime = System.currentTimeMillis();;
 		boolean done = false;
 		double oldSum = 0.0;
 		double newSum = 0.0;
@@ -88,6 +95,7 @@ public class PageRank {
 			}
 			if(Math.abs(newSum - oldSum) < 0.0001 && !firstIter) {
 				done = true;
+				endTime = System.currentTimeMillis();
 			}
 			firstIter = false;
 		}
