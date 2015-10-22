@@ -7,6 +7,28 @@ public class Graph {
 	public boolean invert;
 	public long time;
 	
+	public Graph(String fileName, boolean undirected, boolean invert, PrintWriter writeTo) {
+		time = System.currentTimeMillis();
+		nodes = new HashMap<String, Node>();
+		this.undirected = undirected;
+		this.invert = invert;
+		String fileType = fileName.substring(fileName.length() - 3, fileName.length());
+		
+		if(fileType.compareTo("csv") == 0){
+			scanCSV(fileName);
+		}
+		else if(fileType.compareTo("txt") == 0) {
+			scanSNAP(fileName);
+		}
+		else {
+			System.out.println("File type not supported yet");
+			return;
+		}
+		time = System.currentTimeMillis() - time;
+//		time /= 1000.0;
+		writeTo.println("Graph creation took " + time + " milliseconds");
+	}
+	
 	//Currently just call the constructor with the file, only works with csv 
 	@SuppressWarnings("resource")
 	public Graph(String fileName, boolean undirected, boolean invert) {

@@ -1,14 +1,29 @@
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 
 
 public class Main {
 	public static void main(String args[]) {
-		Graph graph = new Graph("wiki-Vote.txt", true, false);
+		PrintWriter writeTo = null;
+		int printLimit = 50;
+		String fileName = "soc-LiveJournal1";
+		try{
+			writeTo= new PrintWriter(fileName + "Output.txt", "UTF-8");
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+			return;
+		}
+		Graph graph = new Graph(fileName + ".txt", true, false, writeTo);
 		PageRank pageRank = new PageRank(graph);
+		long time = System.currentTimeMillis();		
 		pageRank.getPageRanks();
-		pageRank.printPageRanks();
-		System.out.println("Num Iterations: " + pageRank.numIter);
+		time = System.currentTimeMillis() - time;
+		writeTo.println("Page Rank took " + time + "ms.");
+		pageRank.printPageRanks(writeTo, printLimit);
+		writeTo.println("Num Iterations: " + pageRank.numIter);
+		writeTo.close();
 //		ArrayList<Node> graph = new ArrayList<Node>();
 //		PageRank pageRank = null;
 //		graph.add(new Node()s);
