@@ -13,7 +13,8 @@ public class Main {
 		}
 		String fileName = args[0];
 		try{
-			writeTo= new PrintWriter(fileName.substring(0, fileName.length() - 4) + "Output.txt", "UTF-8");
+			//writeTo= new PrintWriter(fileName.substring(0, fileName.length() - 4) + "Output.txt", "UTF-8");
+			writeTo = new PrintWriter(System.out, true);
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
