@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +58,33 @@ public class PageRank {
 		int i = 1;
 		for(Node node : nodes) {
 			System.out.println(i++ + " obj: " + node.element + " with pagerank: " + node.pageRank);
+		}
+	}
+	
+	public void printPageRanks(PrintWriter writeTo, int printLimit) {
+		ArrayList<Node> nodes = new ArrayList<Node>();
+		for(Entry<Node, Double> entry : pageRank.entrySet()) {
+			nodes.add(entry.getKey());
+		}
+		Collections.sort(nodes, new Comparator<Node>() {
+
+			@Override
+			public int compare(Node o1, Node o2) {
+				if(o1.pageRank < o2.pageRank) {
+					return 1;
+				} else {
+					return -1;
+				}
+			}
+			
+		});
+		int i = 1;
+		for(Node node : nodes) {
+			writeTo.println(i++ + " obj: " + node.element + " with pagerank: " + node.pageRank);
+			if(i == printLimit + 1) {
+				writeTo.println("(Shortened for length)");
+				return;
+			}
 		}
 	}
 	
