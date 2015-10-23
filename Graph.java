@@ -71,24 +71,24 @@ public class Graph {
 	    	return;
 	    }
 		
-		if(fileName.equals("stateborders.csv")) {
+		if(fileName.indexOf("stateborders.csv") != -1) {
 			undirected = true;
 		}
-		if(fileName.equals("karate.csv")) {
+		if(fileName.indexOf("karate.csv") != -1) {
 			undirected = true;
 		}
-		if(fileName.equals("dolphins.csv")) {
+		if(fileName.indexOf("dolphins.csv") != -1) {
 			undirected = true;
 		}
-		if(fileName.equals("football.csv")) {
+		if(fileName.indexOf("football.csv") != -1) {
 			undirected = false;
 			invert = true;
 			delimit = ", ";
 		}
-		if(fileName.equals("lesmis.csv")) {
+		if(fileName.indexOf("lesmis.csv") != -1) {
 			undirected = true;
 		}
-		if(fileName.equals("polblogs.csv")) {
+		if(fileName.indexOf("polblogs.csv") != -1) {
 			undirected = false;
 		}
 		
