@@ -30,7 +30,6 @@ public class Graph {
 	}
 	
 	//Currently just call the constructor with the file, only works with csv 
-	@SuppressWarnings("resource")
 	public Graph(String fileName, boolean undirected, boolean invert) {
 		time = System.currentTimeMillis();
 		nodes = new HashMap<String, Node>();
@@ -244,14 +243,6 @@ public class Graph {
 		
 		lineScan.close();
 		stringScan.close();
-	}
-	
-	
-	void printGraph() {
-		ArrayList<Node> printNodes = new ArrayList<Node>(nodes.values());
-	    for (Node node : printNodes) {
-	    	//node.printEdges();
-	    }
 	}
 	
 	public int size() {
