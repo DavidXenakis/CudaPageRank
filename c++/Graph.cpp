@@ -7,12 +7,12 @@ using namespace std;
 
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
-
+   index = 0;
    if(!fileType.compare("csv")) {
-      scanCSV(fileName);
+      scanFile(fileName, true);
    }
    else if(!fileType.compare("txt"))
-      scanSNAP(fileName);
+      scanFile(fileName, false);
    else {
       cerr << "This file is not supported." << endl;
       exit(1);
@@ -20,42 +20,7 @@ Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
 
 }
 
-void Graph::scanCSV(string fileName) {
-   ifstream inFile (fileName, ifstream::in);
-   char oneline[512];
-   char firstWord[50];
-   char secondWord[50];
-
-   int lineNdx = 0;
-   
-   inFile.getline(oneline, 512);
-   while (inFile)
-   {
-      lineNdx = 0;
-
-      if(oneline[0] == '#')
-         continue;
-
-      lineNdx = parseWord(oneline + lineNdx, firstWord);
-      // cout << oneline + lineNdx << endl;
-      lineNdx += parseWord(oneline + lineNdx, secondWord);
-
-      cout << "Node: " << firstWord << ",Val: " << secondWord;
-
-      // cout << oneline + lineNdx << endl;
-
-      lineNdx += parseWord(oneline + lineNdx, firstWord);
-      lineNdx += parseWord(oneline + lineNdx, secondWord);
-
-      cout << " Node: " << firstWord << ",Val: " << secondWord << endl;
-
-      inFile.getline(oneline, 512);
-   }
-
-   inFile.close();
-}
-
-void Graph::scanSNAP(string fileName) {
+void Graph::scanFile(string fileName, bool csvFile) {
    ifstream inFile (fileName, ifstream::in);
    char oneline[512];
    char firstWord[50];
@@ -68,15 +33,32 @@ void Graph::scanSNAP(string fileName) {
    {
       lineNdx = 0;
 
-      if(oneline[0] == '#')
+      if(oneline[0] == '#') {
+         inFile.getline(oneline, 512);
          continue;
+      }
 
+      //Saving the first node
       lineNdx = parseWord(oneline + lineNdx, firstWord);
-      lineNdx = parseWord(oneline + lineNdx, secondWord);
 
-      cout << "First Node: " << firstWord << "; Second Node: " << secondWord << endl;
+      //If csv file, skip the numerical value, it is not necessary
+      if(csvFile)
+         lineNdx += parseWord(oneline + lineNdx, secondWord);
+
+      //saving the second node
+      lineNdx += parseWord(oneline + lineNdx, secondWord);
+
+      if(namesToIndex.find(firstWord) == namesToIndex.end())
+         namesToIndex[firstWord] = index++;
+      if(namesToIndex.find(secondWord) == namesToIndex.end())
+         namesToIndex[secondWord] = index++;
+
+
+      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord];
+      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord] << endl;
+
       inFile.getline(oneline, 512);
-   }
+   } 
 
    inFile.close();
 }

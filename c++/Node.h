@@ -8,12 +8,12 @@
 
 class Node {
 public:
-    bool firstVisit = false;
+    bool firstVisit;
     std::string element;
     double pageRank;
-    int value = 0;
+    int value;
     Node* inlinks[10];
-    int outlinksSize = 0;
+    int outlinksSize;
 };
 
 #endif //PAGERANK_NODE_H

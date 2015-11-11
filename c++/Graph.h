@@ -3,19 +3,21 @@
 
 #include <iostream>
 #include <string>
+#include <unordered_map>
 // #include "Node.h"
 
 using namespace std;
 
 class Graph {
 public:
+   int index; 
+   unordered_map<string, int> namesToIndex;
    //The last three parameters are default parameters. If not called with those parameters,
    //function call will default to giving them these values
    Graph(string fileName, bool undirected = 0, bool invert = 0, FILE* writeTo = NULL);
-   void scanCSV(string fileName);
-   void scanSNAP(string fileName);
+   void scanFile(string fileName, bool csvFile);
    int size();
-// private:
+private:
    int parseWord(char *fromString, char *toString);
 };
 
