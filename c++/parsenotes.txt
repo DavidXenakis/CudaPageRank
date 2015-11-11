@@ -1,0 +1,24 @@
+Row[]
+Col[]
+val[]
+outlinks[]
+
+First Pass through input
+   index = 0
+   Read edge from a to b
+      if a not in hashmap
+         map a to index
+         index++
+      if b not in hashmap
+         map b to index
+         index++
+      outlinks[hash.get(a)] += 1
+
+Second Pass through input
+   index = 0
+   Read edge from a to b
+      val[index] = 1 / outlinks[hash.get(a)]
+      row[index] = hash.get(b)
+      col[index] = hash.get(a)
+      index++
+
