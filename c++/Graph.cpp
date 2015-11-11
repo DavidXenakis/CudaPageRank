@@ -7,7 +7,7 @@ using namespace std;
 
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
-
+   index = 0;
    if(!fileType.compare("csv")) {
       scanCSV(fileName);
    }
@@ -27,30 +27,35 @@ void Graph::scanCSV(string fileName) {
    char secondWord[50];
 
    int lineNdx = 0;
-   
+
    inFile.getline(oneline, 512);
    while (inFile)
    {
       lineNdx = 0;
 
-      if(oneline[0] == '#')
+      if(oneline[0] == '#') {
+         inFile.getline(oneline, 512);
          continue;
+      }
 
+      //Saving the first node
       lineNdx = parseWord(oneline + lineNdx, firstWord);
-      // cout << oneline + lineNdx << endl;
+      //Skipping the numerical value, it is not necessary
+      lineNdx += parseWord(oneline + lineNdx, secondWord);
+      //saving the second node
       lineNdx += parseWord(oneline + lineNdx, secondWord);
 
-      cout << "Node: " << firstWord << ",Val: " << secondWord;
+      if(namesToIndex.find(firstWord) == namesToIndex.end())
+         namesToIndex[firstWord] = index++;
+      if(namesToIndex.find(secondWord) == namesToIndex.end())
+         namesToIndex[secondWord] = index++;
 
-      // cout << oneline + lineNdx << endl;
 
-      lineNdx += parseWord(oneline + lineNdx, firstWord);
-      lineNdx += parseWord(oneline + lineNdx, secondWord);
-
-      cout << " Node: " << firstWord << ",Val: " << secondWord << endl;
+      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord];
+      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord] << endl;
 
       inFile.getline(oneline, 512);
-   }
+   } 
 
    inFile.close();
 }
@@ -65,16 +70,25 @@ void Graph::scanSNAP(string fileName) {
 
    inFile.getline(oneline, 512);
    while (inFile)
-   {
+   {  
       lineNdx = 0;
 
-      if(oneline[0] == '#')
+      if(oneline[0] == '#') {
+         inFile.getline(oneline, 512);
          continue;
+      }
 
       lineNdx = parseWord(oneline + lineNdx, firstWord);
       lineNdx = parseWord(oneline + lineNdx, secondWord);
 
-      cout << "First Node: " << firstWord << "; Second Node: " << secondWord << endl;
+      if(namesToIndex.find(firstWord) == namesToIndex.end())
+         namesToIndex[firstWord] = index++;
+      if(namesToIndex.find(secondWord) == namesToIndex.end())
+         namesToIndex[secondWord] = index++;
+
+      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord];
+      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord] << endl;
+
       inFile.getline(oneline, 512);
    }
 
