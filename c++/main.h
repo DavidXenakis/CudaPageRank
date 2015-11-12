@@ -6,5 +6,6 @@
 #define PAGERANK_MAIN_H
 
 #include <cstring>
+#include <iostream>
 
 #endif //PAGERANK_MAIN_H

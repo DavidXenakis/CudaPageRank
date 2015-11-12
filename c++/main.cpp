@@ -1,9 +1,10 @@
-#include <iostream>
 #include "main.h"
 #include "Graph.h"
+
 using namespace std;
 
-int main() {
-    Graph::Graph("football.csv");
+int main(int argc, char** argv) {
+    cout << "hello\n";
+    Graph::Graph(string(argv[1]));
     return 0;
 }

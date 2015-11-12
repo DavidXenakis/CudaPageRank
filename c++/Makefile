@@ -1,6 +1,7 @@
 CC = g++
 CFLAGS = -std=c++0x 
 
+
 all: clean main
 
 main: main.o 

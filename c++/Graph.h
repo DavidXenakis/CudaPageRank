@@ -1,17 +1,15 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-
 #include <iostream>
 #include <string>
 #include <unordered_map>
-// #include "Node.h"
+#include <fstream>
+#include <queue>
 
 using namespace std;
 
 class Graph {
 public:
-   int index; 
-   unordered_map<string, int> namesToIndex;
    //The last three parameters are default parameters. If not called with those parameters,
    //function call will default to giving them these values
    Graph(string fileName, bool undirected = 0, bool invert = 0, FILE* writeTo = NULL);

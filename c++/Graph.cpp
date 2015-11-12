@@ -1,13 +1,13 @@
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "Graph.h"
+#include "Node.h"
 
 using namespace std;
 
+
+unordered_map<string, Node> namesToIndex;
+
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
-   index = 0;
    if(!fileType.compare("csv")) {
       scanFile(fileName, true);
    }
@@ -22,9 +22,16 @@ Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
 
 void Graph::scanFile(string fileName, bool csvFile) {
    ifstream inFile (fileName, ifstream::in);
+   int index = 0;
    char oneline[512];
    char firstWord[50];
    char secondWord[50];
+   int firstIndex = -1;
+   int secondIndex = -1;
+   unordered_map<std::string,Node>::const_iterator gotFirst;
+   unordered_map<std::string,Node>::const_iterator gotSecond;
+
+
 
    int lineNdx = 0;
 
@@ -48,14 +55,26 @@ void Graph::scanFile(string fileName, bool csvFile) {
       //saving the second node
       lineNdx += parseWord(oneline + lineNdx, secondWord);
 
-      if(namesToIndex.find(firstWord) == namesToIndex.end())
-         namesToIndex[firstWord] = index++;
-      if(namesToIndex.find(secondWord) == namesToIndex.end())
-         namesToIndex[secondWord] = index++;
+      if((gotFirst = namesToIndex.find(firstWord)) == namesToIndex.end()) { //first word not in hashmap
+         firstIndex = index++;
+         namesToIndex[firstWord] = Node(firstIndex);
+      } else { //in hashmap
+         firstIndex = gotFirst->second.index;
+      }
+
+      if((gotSecond = namesToIndex.find(secondWord)) == namesToIndex.end()) { //second word not in hashmap
+         secondIndex = index++;
+         namesToIndex[secondWord] = Node(secondIndex);
+      } else { //in hashmap
+         secondIndex = gotSecond->second.index;
+      }
+
+      ((std::priority_queue<int>)((namesToIndex[secondWord]).edges)).push(firstIndex);
 
 
-      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord];
-      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord] << endl;
+
+      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord].index;
+      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord].index << endl;
 
       inFile.getline(oneline, 512);
    } 
