@@ -11,10 +11,19 @@ returns a dense vector of ranks
 */
 
 #include "SparseMatrix.h"
+#include <stdio.h>
+#include <cuda_runtime.h>
+#include <stdlib.h>
+#include "cusparse.h"
+
 #define QUADRATIC_ERROR .001
 #define DAMPING_FACTOR .85
 
-float * PageRankSparse::pagerank(SparseMatrix M) {
+using namespace std;
+
+
+/*
+float * pagerank(SparseMatrix M) {
    int n = M.numRows();
    float *v = malloc(sizeof(float) * n);
    std::fill(v, v+n, 1/n);
@@ -38,6 +47,34 @@ float * PageRankSparse::pagerank(SparseMatrix M) {
    free(M_hat);
    free(last_v);
 }
+*/
+
+void convertCOO2CSR(SparseMatrix *M, cusparseHandle_t handle) {
+   int *devRowPtr;
+
+   cusparseStatus_t status;
+   cudaMalloc(&devRowPtr, M->nnz * sizeof(int));
+
+   status = cusparseXcoo2csr(handle, M->devRowInd, M->nnz, M->width, devRowPtr, CUSPARSE_INDEX_BASE_ZERO);
+   M->devRowPtr = devRowPtr;
+
+   cudaFree(M->devRowInd);
+}
+
+void putMatOnDevice(SparseMatrix *M, cusparseHandle_t handle) {
+   int *devRowInd, *devColInd;
+   float *devVal;
+   cudaMalloc(&devRowInd, M->nnz * sizeof(int));
+   cudaMemcpy(devRowInd, M->cooRowIndA, M->nnz * sizeof(int), cudaMemcpyHostToDevice); 
+   cudaMalloc(&devVal, M->nnz * sizeof(float));
+   cudaMemcpy(devVal, M->cooValA, M->nnz * sizeof(float), cudaMemcpyHostToDevice);
+   cudaMalloc(&devColInd, M->nnz * sizeof(int));
+   cudaMemcpy(devColInd, M->cooColIndA, M->nnz * sizeof(int), cudaMemcpyHostToDevice); 
+
+   M->devRowInd = devRowInd;
+   M->devVal = devVal;
+   M->devColInd = devColInd;
+}
 
 /* TODO
 
@@ -47,49 +84,71 @@ SparseMatrix *sparse_MXplusB(SparseMatrix X, float m, float b, int n)
 
 float vectorSubtractAndNormalize2(float *v, float *last_v, int n)
 
+
 */
-
-
 //TODO test coo2csr on test data
 //TODO test csrmv on test data
-float * PageRankSparse::sparse_MatrixVectorMultiply(SparseMatrix M, float *v, int n) {
+void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float *vect, float *newVect, float **devVect) {
 #ifdef GPU
   // cusparseStatus_t cusparseXcoo2csr(cusparseHandle_t handle, const int *cooRowInd,
    //                          int nnz, int m, int *csrRowPtr, cusparseIndexBase_t idxBase);
-   int *devRowInd, *devRowPtr, *devColInd;
-   float *devVals, *devVect, *devVectNew;
+   float *devVectNew;
+   float alpha = 1.0f;
+   float beta = 0.0f;
+   int vectWidth = M->width;
+
+   cusparseStatus_t status;
+   cusparseMatDescr_t descr;
+   status = cusparseCreateMatDescr(&descr);
+   cusparseSetMatType(descr,CUSPARSE_MATRIX_TYPE_GENERAL);
+   cusparseSetMatIndexBase(descr,CUSPARSE_INDEX_BASE_ZERO);
+
+   // Check to see if the prestige vector is already on card
+   if ( *devVect == NULL ) {
+      cudaMalloc(devVect, vectWidth * sizeof(float));
+      cudaMemcpy(*devVect, vect, vectWidth * sizeof(float), cudaMemcpyHostToDevice);
+   } 
+
+   cudaMalloc(&devVectNew, vectWidth * sizeof(float));
+
+   cusparseOperation_t op = CUSPARSE_OPERATION_NON_TRANSPOSE;
+   status = cusparseScsrmv(handle, op, M->width, M->width, M->nnz, &alpha,
+         descr, M->devVal, M->devRowPtr, M->devColInd, *devVect, &beta, devVectNew); 
+
+   cudaMemcpy(newVect, devVectNew, vectWidth * sizeof(float), cudaMemcpyDeviceToHost);
+   *devVect = devVectNew;
+
+   cudaFree(*devVect);
+#endif
+}
+
+int main() {
+   float vals[7] = {1.0, 4.0, 2.0, 3.0, 5.0, 7.0, 9.0};
+   int rowInd[7] = {0, 0, 1, 1, 2, 2, 3};
+   int colInd[7] = {0, 1, 1, 2, 0, 3, 2};
+
+   float vect[4] = {1.0, 2.0, 3.0, 4.0};
+   float newVect[4];
+   float *devVect = NULL;
 
    cusparseHandle_t handle;
    cusparseStatus_t status;
-   status = cusparseCreate();
-   if (status != CUSPARSE_STATUS_SUCCESS) {
-      cout << "Failed to set up cusparse";
-      exit(1);
+   status = cusparseCreate(&handle);
+   SparseMatrix m (vals, rowInd, colInd, 4, 7);
+
+   for (int i = 0; i < 4; i++) {
+      printf("%.2f ", vect[i]);
    }
+   printf("\n");
 
-   cudaMalloc(&devRowInd, M.nnz * sizeof(int));
-   cudaMemcpy(devRowInd, M.cooRowInd, M.nnz * sizeof(int), cudaMemcpyHostToDevice); 
-   cudaMalloc(&devColInd, M.nnz * sizeof(int));
-   cudaMemcpy(devColInd, M.cooColInd, M.nnz * sizeof(int), cudaMemcpyHostToDevice); 
-   cudaMalloc(&devVals, M.nnz * sizeof(float));
-   cudaMemcpy(devVals, M.cooValA, m.nnz * sizeof(float), cudaMemcpyHostToDevice);
-
-   int *devRowPtr;
-   cudaMalloc(&devRowPtr, M.nnz * sizeof(int));
-
-   status = cusparseXcoo2csr(handle, devRowInd, M.nnz, M.width, devRowPtr, CUSPARSE_INDEX_BASE_ZERO);
-
-   cusparseOperation_t op = CUSPARSE_OPERATION_TRANSPOSE;
-   cusparseMatDescr_t descr = 0;
-   status = cusparseCreateMatDescr(&descr);
-
-   cudaMalloc(&devVect, n * sizeof(float));
-   cudaMemcpy(devVect, v, n * sizeof(float), cudaMemcpyHostToDevice);
-   cudaMalloc(&devVect, n * sizeof(float));
-
-   status = cusparseScsrmv(handle, op, M.width, M.width, M.nnz, 1.0,
-         descr, devVals, devRowPtr, devColInd, devVect, (float *) 0, devVectNew); 
-                                                                           
-#endif
-
+   putMatOnDevice(&m, handle);
+   convertCOO2CSR(&m, handle);
+   sparse_MatrixVectorMultiply(&m, handle,  vect, newVect, &devVect);
+      
+   for (int i = 0; i < 4; i++) {
+      printf("%.2f ", newVect[i]);
+      // SHOULD BE [9 13 33 27]
+   }
+   printf("\n");
+   return 0;
 }
