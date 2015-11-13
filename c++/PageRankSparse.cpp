@@ -9,6 +9,8 @@ v_quadratic_error: quadratic error allowed
 
 returns a dense vector of ranks
 */
+
+#include "SparseMatrix.h"
 #define QUADRATIC_ERROR .001
 #define DAMPING_FACTOR .85
 
