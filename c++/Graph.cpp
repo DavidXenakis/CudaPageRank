@@ -4,7 +4,45 @@
 using namespace std;
 
 
-unordered_map<string, Node> namesToIndex;
+unordered_map<string, Node*> namesToIndex;
+vector<string> indexToName;
+int numEdges = 0;
+
+
+
+void Graph::printMatrix(SparseMatrix sm) {
+   for(int i = 0; i < sm.width; i++) {
+      cout << sm.cooValA[i] << " ";
+   }
+   cout << endl;
+   for(int i = 0; i< sm.width;i ++) {
+      cout << sm.cooRowIndA[i] << " ";
+   }
+   cout << endl;
+   for (int i = 0; i < sm.width; i ++) {
+      cout << sm.cooColIndA[i] << " ";
+   }
+   cout << endl;
+}
+
+SparseMatrix Graph::createSparseMatrix() {
+   int *rowIndex = (int *)malloc(sizeof(int) * numEdges);
+   int *colIndex = (int *)malloc(sizeof(int) * numEdges);
+   float *vals = (float *)malloc(sizeof(float) * numEdges);
+   int valIndex = 0;
+   for(int i = 0; i < indexToName.size(); i++) {
+      string nodeName = indexToName[i];
+      Node *tempNode = namesToIndex[nodeName];
+      while(!tempNode->edges.empty()) {
+         vals[valIndex] = 1.0 / ((namesToIndex[indexToName[tempNode->edges.top()]])->numOutlinks);
+         colIndex[valIndex] = tempNode->edges.top();
+         tempNode->edges.pop();
+         rowIndex[valIndex] = i;
+         valIndex++;
+      }
+   }
+   return SparseMatrix(vals, rowIndex, colIndex, numEdges, 0);
+}
 
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
@@ -28,8 +66,8 @@ void Graph::scanFile(string fileName, bool csvFile) {
    char secondWord[50];
    int firstIndex = -1;
    int secondIndex = -1;
-   unordered_map<std::string,Node>::const_iterator gotFirst;
-   unordered_map<std::string,Node>::const_iterator gotSecond;
+   unordered_map<std::string,Node*>::const_iterator gotFirst;
+   unordered_map<std::string,Node*>::const_iterator gotSecond;
 
 
 
@@ -57,28 +95,34 @@ void Graph::scanFile(string fileName, bool csvFile) {
 
       if((gotFirst = namesToIndex.find(firstWord)) == namesToIndex.end()) { //first word not in hashmap
          firstIndex = index++;
-         namesToIndex[firstWord] = Node(firstIndex);
+         indexToName.push_back(firstWord);
+         Node *tempFirst = new Node(firstIndex);
+
+//         tempFirst->index = firstIndex;
+         namesToIndex[firstWord] = tempFirst;
       } else { //in hashmap
-         firstIndex = gotFirst->second.index;
+         firstIndex = gotFirst->second->index;
       }
 
       if((gotSecond = namesToIndex.find(secondWord)) == namesToIndex.end()) { //second word not in hashmap
          secondIndex = index++;
-         namesToIndex[secondWord] = Node(secondIndex);
+         indexToName.push_back(secondWord);
+         Node *tempSecond = new Node(secondIndex);
+//         tempSecond->index = secondIndex;
+         namesToIndex[secondWord] = tempSecond;
+
       } else { //in hashmap
-         secondIndex = gotSecond->second.index;
+         secondIndex = gotSecond->second->index;
       }
+      numEdges++;
+      namesToIndex[secondWord]->edges.push(firstIndex);
+      namesToIndex[firstWord]->numOutlinks++;
 
-      ((std::priority_queue<int>)((namesToIndex[secondWord]).edges)).push(firstIndex);
-
-
-
-      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord].index;
-      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord].index << endl;
+//      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord]->index;
+//      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord]->index << endl;
 
       inFile.getline(oneline, 512);
-   } 
-
+   }
    inFile.close();
 }
 

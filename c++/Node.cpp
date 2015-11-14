@@ -3,3 +3,4 @@
 //
 
 int index;
+int numOutlinks = 0;

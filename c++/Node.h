@@ -8,36 +8,33 @@
 #include <string>
 #include <queue>
 
-/*class Node {
+
+class CompareEdges {
 public:
-    bool firstVisit;
-    std::string element;
-    double pageRank;
-    int value;
-    Node* inlinks[10];
-    int outlinksSize;
-};*/
+    bool operator()(int t1, int t2)
+    {
+       if (t1 > t2) return true;
+       return false;
+    }
+};
 
 class Node {
 public:
-    std::priority_queue<int> edges;
-    Node(int aIndexint);
+    std::priority_queue<int, vector<int>, CompareEdges> edges;
+    Node(int aIndex);
     Node();
+    int numOutlinks;
     int index;
-    int getIndex();
 };
 
 Node::Node(int aIndex) {
    index = aIndex;
+   numOutlinks = 0;
 }
 
 Node::Node(void) {
    index = -1;
+   numOutlinks = 0;
 };
-
-int Node::getIndex() {
-   return index;
-}
-
 
 #endif //PAGERANK_NODE_H

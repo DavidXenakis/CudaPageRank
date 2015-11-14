@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <fstream>
 #include <queue>
+#include <vector>
+#include "SparseMatrix.h"
 
 using namespace std;
 
@@ -15,6 +17,8 @@ public:
    Graph(string fileName, bool undirected = 0, bool invert = 0, FILE* writeTo = NULL);
    void scanFile(string fileName, bool csvFile);
    int size();
+   SparseMatrix createSparseMatrix();
+    void printMatrix(SparseMatrix sm);
 private:
    int parseWord(char *fromString, char *toString);
 };

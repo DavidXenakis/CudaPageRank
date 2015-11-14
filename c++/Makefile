@@ -9,8 +9,11 @@ main: main.o
 
 
 main.o: 
-	$(CC) $(CFLAGS) -c *.cpp
+	$(CC) $(CFLAGS) -c Graph.cpp main.cpp Node.cpp PageRank.cpp SparseMatrix.cpp
 
 
 clean:
-	rm -rf *.o main 
+	rm -rf *.o main
+
+matt: 
+	$(CC) Graph.cpp main.cpp Node.cpp PageRank.cpp SparseMatrix.cpp
