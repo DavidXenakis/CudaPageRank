@@ -15,9 +15,10 @@ returns a dense vector of ranks
 #include <cuda_runtime.h>
 #include <stdlib.h>
 #include <thrust/reduce.h>
+#include <thrust/sort.h>
 #include "cusparse.h"
 
-#define QUADRATIC_ERROR .001
+#define QUADRATIC_ERROR .0001
 #define DAMPING_FACTOR .85
 #define THREADS_PER_BLOCK 1024
 #ifdef MIC
@@ -152,15 +153,10 @@ void sparse_MXplusB(SparseMatrix *M, float m, float b) {
    MXplusBKernel<<<gridDim, blockDim>>>(M->nnz, m, M->devVal, b);
 }
 
-float *pageRank(SparseMatrix M) {
-   int n = M.width;
+void pageRank(SparseMatrix *M, int *array) {
+   int n = M->width;
    float *vect = (float *) malloc(sizeof(float) * n);
    std::fill(vect, vect + n, 1.0f / n);
-
-   for (int i = 0; i < n; i++) {
-      printf("%.7f ", vect[i]);
-   }
-   printf("\n");
 
    float *newVect = (float *) malloc(sizeof(float) * n);
    float *devVect = NULL;
@@ -169,14 +165,14 @@ float *pageRank(SparseMatrix M) {
    cusparseHandle_t handle;
    cusparseCreate(&handle);
 
-   putMatOnDevice(&M, handle);
-   sparse_MXplusB(&M, DAMPING_FACTOR, (1.0f - DAMPING_FACTOR) / n);
-   convertCOO2CSR(&M, handle);
-   int iter = 0;
+   putMatOnDevice(M, handle);
+   sparse_MXplusB(M, DAMPING_FACTOR, (1.0f - DAMPING_FACTOR) / n);
+   convertCOO2CSR(M, handle);
+   //int iter = 0;
 
    float error;
    do {
-      sparse_MatrixVectorMultiply(&M, handle, vect, newVect, &devVect, &devVectNew);
+      sparse_MatrixVectorMultiply(M, handle, vect, newVect, &devVect, &devVectNew);
 
       error = vectorSubtractAndNormalize2(devVectNew, devVect, n);
 
@@ -188,25 +184,24 @@ float *pageRank(SparseMatrix M) {
       temp = devVectNew;
       devVectNew = devVect;
       devVect = temp;
-      printf("Iteration: %d... Error: %.4f\n", iter++, error);
+      //printf("Iteration: %d... Error: %.4f\n", iter++, error);
       
    } while (error > QUADRATIC_ERROR);
 
-   for (int i = 0; i < n; i++) {
-      printf("%.7f ", vect[i]);
-   }
-   printf("\n");
-
-   cudaFree(devVect);
    cudaFree(devVectNew);
-   cudaFree(M.devVal);
-   cudaFree(M.devRowPtr);
-   cudaFree(M.devColInd);
+   cudaFree(M->devVal);
+   cudaFree(M->devRowPtr);
+   cudaFree(M->devColInd);
    
-   free(vect);
    free(newVect);
 
-   return vect;
+   for(int i = 0; i < M->width; i++) {
+      array[i] = i;
+   }
+
+   thrust::stable_sort_by_key(vect, vect + M->width, array, thrust::greater<float>());
+
+   M->sortedPrestigeVector = vect;
 }
 /*
 int main() {

@@ -18,7 +18,7 @@ public:
    void scanFile(string fileName, bool csvFile);
    int size();
    SparseMatrix createSparseMatrix();
-    void printMatrix(SparseMatrix sm);
+   void printMatrix(SparseMatrix sm);
 private:
    int parseWord(char *fromString, char *toString);
 };

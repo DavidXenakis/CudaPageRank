@@ -1,6 +1,11 @@
 #ifndef SPARSEMATRIX_H
 #define SPARSEMATRIX_H
 
+#include <string>
+#include <vector>
+
+using namespace std;
+
 class SparseMatrix {
 public:
    float *cooValA;
@@ -10,7 +15,9 @@ public:
    int width, nnz;
    int *devRowPtr, *devColInd, *devRowInd;
    float *devVal;
-   SparseMatrix(float *, int *, int *, int , int );
+   float *sortedPrestigeVector;
+   std::string * indexToName;
+   SparseMatrix(float *, int *, int *, int , int , std::string *);
 };
 
 #endif

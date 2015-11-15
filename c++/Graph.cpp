@@ -3,12 +3,9 @@
 
 using namespace std;
 
-
 unordered_map<string, Node*> namesToIndex;
 vector<string> indexToName;
 int numEdges = 0;
-
-
 
 void Graph::printMatrix(SparseMatrix sm) {
    for(int i = 0; i < sm.width; i++) {
@@ -41,7 +38,7 @@ SparseMatrix Graph::createSparseMatrix() {
          valIndex++;
       }
    }
-   return SparseMatrix(vals, rowIndex, colIndex, indexToName.size(), numEdges);
+   return SparseMatrix(vals, rowIndex, colIndex, indexToName.size(), numEdges, &indexToName[0]);
 }
 
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
