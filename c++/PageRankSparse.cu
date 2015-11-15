@@ -208,7 +208,7 @@ float *pageRank(SparseMatrix M) {
 
    return vect;
 }
-
+/*
 int main() {
    float vals[7] = {.5, .5, .5, .5, .5, 1, .5};
    int rowInd[7] = {0, 0, 1, 1, 2, 2, 3};
@@ -225,4 +225,4 @@ int main() {
    pageRank(m2);
      
    return 0;
-}
+}*/

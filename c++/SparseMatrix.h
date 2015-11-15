@@ -13,12 +13,4 @@ public:
    SparseMatrix(float *, int *, int *, int , int );
 };
 
-SparseMatrix::SparseMatrix(float *cVA, int *cRIA, int *cCIA, int w, int n) {
-   cooValA = cVA;
-   cooRowIndA = cRIA;
-   cooColIndA = cCIA;
-   width = w;
-   nnz = n;
-}
-
 #endif

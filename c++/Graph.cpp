@@ -41,7 +41,7 @@ SparseMatrix Graph::createSparseMatrix() {
          valIndex++;
       }
    }
-   return SparseMatrix(vals, rowIndex, colIndex, numEdges, 0);
+   return SparseMatrix(vals, rowIndex, colIndex, indexToName.size(), numEdges);
 }
 
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
