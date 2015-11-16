@@ -106,7 +106,6 @@ void Graph::scanFile(string fileName, bool csvFile) {
       //saving the second node
       lineNdx = parseWord(lineNdx, secondWord);
       if(namesToIndex.find(string(firstWord)) == namesToIndex.end() /*findInVector(string(firstWord)) == false*/) { //first word not in hashmap
-
          count++;
          firstIndex = index++;
          indexToName.push_back(string(firstWord));
@@ -171,7 +170,7 @@ char* Graph::parseWord(char *fromString, char *toString) {
       }*/
       if(c >= 'A' && c <= 'Z') {
          toString[wordNdx++] = c + 32;
-      } else if(((keepSpace && c != ',') || (!keepSpace && c != ' ' && c != '\t')) && c != '"' && c != 0) {
+      } else if((c != '"' && c != 0 && c != ' ' && c != ',' && c != '\t') || (keepSpace && c == ' ')) {
          toString[wordNdx++] = c;
       }
       else {

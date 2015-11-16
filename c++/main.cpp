@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
    cout << graph.indexToName.size() << endl;
 
 //
-//   for(int i = 0; i < graph.indexToName.size(); i++) {
-//      cout << graph.indexToName[i] << endl;
-//   }
+   for(int i = 0; i < graph.indexToName.size() && i < 10; i++) {
+      cout << graph.indexToName[i] << endl;
+   }
    return 0;
 }
