@@ -168,10 +168,11 @@ int Graph::parseWord(char *fromString, char *toString) {
             c = *fromString++;
             wordNdx++;
          }
-         return wordNdx;
+         return wordNdx - 1;
       }
       c = *fromString++;
    }
+   toString[wordNdx++]  = 0;
 
    //This will never be hit since I never change contLoop
    //While loop should return on its own...

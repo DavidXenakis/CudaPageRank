@@ -16,8 +16,9 @@ int main(int argc, char** argv) {
       printf("%s, %.5e\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }*/
 
-   for(int i = 0; i < graph.indexToName.size(); i++) {
-      cout << graph.indexToName[i] << endl;
-   }
+//   for(int i = 0; i < graph.indexToName.size(); i++) {
+//      cout << graph.indexToName[i] << endl;
+//   }
+   cout << graph.indexToName.size() << endl;
    return 0;
 }
