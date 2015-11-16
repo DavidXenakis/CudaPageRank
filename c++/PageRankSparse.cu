@@ -18,9 +18,10 @@ returns a dense vector of ranks
 #include <thrust/sort.h>
 #include "cusparse.h"
 
-#define QUADRATIC_ERROR .001
-#define DAMPING_FACTOR .85
+#define QUADRATIC_ERROR .01
+#define DAMPING_FACTOR .95
 #define THREADS_PER_BLOCK 1024
+
 #ifdef MIC
 float vectorSubtractAndNormalize2(float *v, float *last_v, int n) {
    float sum = 0;
@@ -33,32 +34,23 @@ float vectorSubtractAndNormalize2(float *v, float *last_v, int n) {
 #endif
 
 #ifdef GPU
-__global__ void subtractAndSquare(float *vectNew, float *vect, float *dest, int *n) {
+__global__ void subtractAndSquare(float *vectNew, float *vect, float *dest, int n) {
    int idx = blockIdx.x * blockDim.x + threadIdx.x;
    float val;
-   if (idx < n[0]){
-      val = (vectNew[idx] - vect[idx]);// * (vectNew[idx] - vect[idx]);
-      /*
-      dest[idx] = val * val;
-      */
+   if (idx < n){
+      val = (vectNew[idx] - vect[idx]);
+      //dest[idx] = val * val;
       dest[idx] = val < 0 ? val * -1.0 : val;
    }
 }
 #endif
 
 #ifdef GPU
-float vectorSubtractAndNormalize2(float *devVectNew, float *devVect, int n) {
+float vectorSubtractAndNormalize2(float *devVectNew, float *devVect, float *devDifference, float *difference, int n) {
    //to be parallelized
    float sum = 0;
 
    //allocate on gpu
-   float *d_difference;
-   cudaMalloc(&d_difference, n * sizeof(float));
-   int *d_n;
-   cudaMalloc(&d_n, sizeof(int));
-
-   //copy to gpu
-   cudaMemcpy(d_n, &n, sizeof(int), cudaMemcpyHostToDevice);
 
    int numBlocks = (n + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
@@ -66,15 +58,10 @@ float vectorSubtractAndNormalize2(float *devVectNew, float *devVect, int n) {
    dim3 blockDim(THREADS_PER_BLOCK, 1);
 
    //launch kenerl
-   subtractAndSquare <<<gridDim, blockDim>>> (devVectNew, devVect, d_difference, d_n);
+   subtractAndSquare <<<gridDim, blockDim>>> (devVectNew, devVect, devDifference, n);
 
    //copy result from gpu
-   float *difference = (float *) malloc(n * sizeof(float));
-   cudaMemcpy(difference, d_difference, n * sizeof(float), cudaMemcpyDeviceToHost);
-
-   //free from gpu
-   cudaFree(d_difference);
-   cudaFree(d_n);
+   cudaMemcpy(difference, devDifference, n * sizeof(float), cudaMemcpyDeviceToHost);
 
    sum = thrust::reduce(difference, difference + n);
 /*
@@ -104,6 +91,7 @@ void convertCOO2CSR(SparseMatrix *M, cusparseHandle_t handle) {
 void putMatOnDevice(SparseMatrix *M, cusparseHandle_t handle) {
    int *devRowInd, *devColInd;
    float *devVal;
+
    cudaMalloc(&devRowInd, M->nnz * sizeof(int));
    cudaMemcpy(devRowInd, M->cooRowIndA, M->nnz * sizeof(int), cudaMemcpyHostToDevice); 
    cudaMalloc(&devVal, M->nnz * sizeof(float));
@@ -117,10 +105,9 @@ void putMatOnDevice(SparseMatrix *M, cusparseHandle_t handle) {
 }
 
 #ifdef GPU
-void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float *vect, float *newVect, float **devVect, float **devVectNew) {
+void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float *vect, float *newVect, float *devVect, float *devVectNew) {
    float alpha = 1.0f;
    float beta = 0.0f;
-   int vectWidth = M->width;
 
    cusparseMatDescr_t descr;
    cusparseCreateMatDescr(&descr);
@@ -128,19 +115,12 @@ void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float
    cusparseSetMatIndexBase(descr,CUSPARSE_INDEX_BASE_ZERO);
 
    // Check to see if the prestige vector is already on card
-   if ( *devVect == NULL ) {
-      cudaMalloc(devVect, vectWidth * sizeof(float));
-      cudaMemcpy(*devVect, vect, vectWidth * sizeof(float), cudaMemcpyHostToDevice);
-   } 
-   if ( *devVectNew == NULL ) {
-      cudaMalloc(devVectNew, vectWidth * sizeof(float));
-   }
 
    cusparseOperation_t op = CUSPARSE_OPERATION_NON_TRANSPOSE;
    cusparseScsrmv(handle, op, M->width, M->width, M->nnz, &alpha,
-         descr, M->devVal, M->devRowPtr, M->devColInd, *devVect, &beta, *devVectNew); 
+         descr, M->devVal, M->devRowPtr, M->devColInd, devVect, &beta, devVectNew); 
 
-   cudaMemcpy(newVect, *devVectNew, vectWidth * sizeof(float), cudaMemcpyDeviceToHost);
+   //cudaMemcpy(newVect, *devVectNew, vectWidth * sizeof(float), cudaMemcpyDeviceToHost);
 }
 #endif
 
@@ -178,31 +158,37 @@ void sparse_XplusB(float *devVect, int width, float b) {
 
 void pageRank(SparseMatrix *M, int *array) {
    int n = M->width;
+   printf("Width: %d\n", n);
    float *vect = (float *) malloc(sizeof(float) * n);
    std::fill(vect, vect + n, 1.0f / n);
-
    float *newVect = (float *) malloc(sizeof(float) * n);
+   float *difference = (float *) malloc(n * sizeof(float));
+   float *devDifference = NULL;
    float *devVect = NULL;
    float *devVectNew = NULL;
 
    cusparseHandle_t handle;
    cusparseCreate(&handle);
 
+   float b = (1.0f - DAMPING_FACTOR) / n;
    putMatOnDevice(M, handle);
    sparse_MX(M, DAMPING_FACTOR);
    convertCOO2CSR(M, handle);
 
-   float b = (1.0f - DAMPING_FACTOR) / n;
-   printf("b = %f\n", b);
+   cudaMalloc(&devDifference, n * sizeof(float));
+   cudaMalloc(&devVect, n * sizeof(float));
+   cudaMalloc(&devVectNew, n * sizeof(float));
+
+   cudaMemcpy(devVect, vect, n * sizeof(float), cudaMemcpyHostToDevice);
    int iter = 0;
 
    float error;
    do {
-      sparse_MatrixVectorMultiply(M, handle, vect, newVect, &devVect, &devVectNew);
+      sparse_MatrixVectorMultiply(M, handle, vect, newVect, devVect, devVectNew);
 
       sparse_XplusB(devVectNew, n, b);
 
-      error = vectorSubtractAndNormalize2(devVectNew, devVect, n);
+      error = vectorSubtractAndNormalize2(devVectNew, devVect, devDifference, difference, n);
 
       // Swap old and new vectors to reuse space
       float *temp = newVect;
@@ -223,8 +209,11 @@ void pageRank(SparseMatrix *M, int *array) {
    cudaFree(M->devVal);
    cudaFree(M->devRowPtr);
    cudaFree(M->devColInd);
-   
+   cudaFree(devDifference);
+
+   free(difference); 
    free(newVect);
+
    for(int i = 0; i < M->width; i++) {
       array[i] = i;
    }
@@ -239,9 +228,9 @@ int main() {
    int rowInd[7] = {0, 0, 1, 1, 2, 2, 3};
    int colInd[7] = {0, 1, 1, 2, 0, 3, 2};
 
-   float vals2[9] = {1.0, .25, 1, 1, .5, .25, .25, .25, .5};
-   int rowInd2[9] = {0, 1, 1, 1, 1, 2, 3, 4, 4};
-   int colInd2[9] = {1, 0, 2, 3, 4, 0, 0, 0, 4};
+   float vals2[9] = {1.0, .25, 1, 1, .5, .25, .25, .5, .25};
+   int rowInd2[9] = {0, 1, 1, 1, 1, 2, 3, 3, 4};
+   int colInd2[9] = {1, 0, 2, 3, 4, 0, 0, 4, 0};
 
    SparseMatrix m (vals, rowInd, colInd, 4, 7);
    SparseMatrix m2(vals2, rowInd2, colInd2, 5, 9);
