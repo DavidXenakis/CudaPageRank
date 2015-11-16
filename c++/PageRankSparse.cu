@@ -18,9 +18,10 @@ returns a dense vector of ranks
 #include <thrust/sort.h>
 #include "cusparse.h"
 
-#define QUADRATIC_ERROR .001
-#define DAMPING_FACTOR .85
+#define QUADRATIC_ERROR .01
+#define DAMPING_FACTOR .95
 #define THREADS_PER_BLOCK 1024
+
 #ifdef MIC
 float vectorSubtractAndNormalize2(float *v, float *last_v, int n) {
    float sum = 0;
@@ -157,6 +158,7 @@ void sparse_XplusB(float *devVect, int width, float b) {
 
 void pageRank(SparseMatrix *M, int *array) {
    int n = M->width;
+   printf("Width: %d\n", n);
    float *vect = (float *) malloc(sizeof(float) * n);
    std::fill(vect, vect + n, 1.0f / n);
    float *newVect = (float *) malloc(sizeof(float) * n);
@@ -168,6 +170,7 @@ void pageRank(SparseMatrix *M, int *array) {
    cusparseHandle_t handle;
    cusparseCreate(&handle);
 
+   float b = (1.0f - DAMPING_FACTOR) / n;
    putMatOnDevice(M, handle);
    sparse_MX(M, DAMPING_FACTOR);
    convertCOO2CSR(M, handle);
@@ -177,8 +180,6 @@ void pageRank(SparseMatrix *M, int *array) {
    cudaMalloc(&devVectNew, n * sizeof(float));
 
    cudaMemcpy(devVect, vect, n * sizeof(float), cudaMemcpyHostToDevice);
-
-   float b = (1.0f - DAMPING_FACTOR) / n;
    int iter = 0;
 
    float error;
