@@ -21,7 +21,7 @@ public:
    void printMatrix(SparseMatrix sm);
    vector<string> indexToName;
 private:
-   int parseWord(char *fromString, char *toString);
+    char* parseWord(char *fromString, char *toString);
 };
 
 

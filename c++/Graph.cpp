@@ -59,6 +59,7 @@ Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
 void Graph::scanFile(string fileName, bool csvFile) {
    ifstream inFile (fileName, ifstream::in);
    int index = 0;
+   int count = 0;
    char oneline[512];
    char firstWord[50];
    char secondWord[50];
@@ -69,7 +70,7 @@ void Graph::scanFile(string fileName, bool csvFile) {
 
 
 
-   int lineNdx = 0;
+   char* lineNdx = oneline;
 
    inFile.getline(oneline, 512);
    while (inFile)
@@ -82,35 +83,37 @@ void Graph::scanFile(string fileName, bool csvFile) {
       }
 
       //Saving the first node
-      lineNdx = parseWord(oneline + lineNdx, firstWord);
+      lineNdx = parseWord(oneline, firstWord);
 
       //If csv file, skip the numerical value, it is not necessary
       if(csvFile)
-         lineNdx += parseWord(oneline + lineNdx, secondWord);
+         lineNdx = parseWord(lineNdx, secondWord);
 
       //saving the second node
-      lineNdx += parseWord(oneline + lineNdx, secondWord);
+      lineNdx = parseWord(lineNdx, secondWord);
+      if(namesToIndex.find(firstWord) == namesToIndex.end()) { //first word not in hashmap
 
-      if((gotFirst = namesToIndex.find(firstWord)) == namesToIndex.end()) { //first word not in hashmap
+         count++;
          firstIndex = index++;
          indexToName.push_back(firstWord);
          Node *tempFirst = new Node(firstIndex);
-
-//         tempFirst->index = firstIndex;
-         namesToIndex[firstWord] = tempFirst;
+         //namesToIndex[firstWord] = tempFirst;
+         namesToIndex.insert(std::make_pair<std::string,Node*>(string(firstWord),tempFirst));
       } else { //in hashmap
-         firstIndex = gotFirst->second->index;
+         firstIndex = namesToIndex[firstWord]->index;/*gotFirst->second->index;*/
       }
 
-      if((gotSecond = namesToIndex.find(secondWord)) == namesToIndex.end()) { //second word not in hashmap
+      if(namesToIndex.find(secondWord) == namesToIndex.end()) { //second word not in hashmap
+         count++;
          secondIndex = index++;
          indexToName.push_back(secondWord);
          Node *tempSecond = new Node(secondIndex);
 //         tempSecond->index = secondIndex;
-         namesToIndex[secondWord] = tempSecond;
+         //namesToIndex[secondWord] = tempSecond;
+         namesToIndex.insert(std::make_pair<std::string,Node*>(string(secondWord),tempSecond));
 
       } else { //in hashmap
-         secondIndex = gotSecond->second->index;
+         secondIndex = namesToIndex[secondWord]->index;/*gotSecond->second->index;*/
       }
       numEdges++;
       namesToIndex[secondWord]->edges.push(firstIndex);
@@ -129,21 +132,21 @@ int Graph::size() {
 }
 
 //return length of fromString  used up
-int Graph::parseWord(char *fromString, char *toString) {
+char* Graph::parseWord(char *fromString, char *toString) {
    int wordNdx = 0;
    char c = 0;
    bool contLoop = true; 
    bool keepSpace = false; 
 
-   c = *fromString++;
-   while(c == ' ' || c == ',') {
-      c = *fromString++;
+   c = *fromString;
+   while(c == ' ' || c == ',' || c == '\t') {
+      c = *++fromString;
    }
 
    if(c == '"') {
       keepSpace = true;
       //Increment past the "
-      c = *fromString++;
+      c = *++fromString;
    }
 
    while(c != 0) {
@@ -157,24 +160,23 @@ int Graph::parseWord(char *fromString, char *toString) {
          toString[wordNdx++] = c;
       }
       else {
-         toString[wordNdx++] = 0;
+         toString[wordNdx]  = 0;
          //Chew up the last "
          if(keepSpace) {
-            c = *fromString++;
+            c = *++fromString;
          }
 
          //Chew up spaces and , to prepare next char arr
-         while(c == ' ' || c == ',' || c == '\t') {
-            c = *fromString++;
-            wordNdx++;
-         }
-         return wordNdx - 1;
+         /*while(c == ' ' || c == ',' || c == '\t') {
+            c = *++fromString;
+         }*/
+         return fromString;
       }
-      c = *fromString++;
+      c = *++fromString;
    }
-   toString[wordNdx++]  = 0;
+   toString[wordNdx]  = 0;
 
    //This will never be hit since I never change contLoop
    //While loop should return on its own...
-   return wordNdx;
+   return fromString;
 }
