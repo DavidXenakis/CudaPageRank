@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 
    prevTime = getTimeMillis();
    SparseMatrix sm = graph.createSparseMatrix();
+<<<<<<< HEAD
    nextTime = getTimeMillis();
    printf("Sparse Matrix creation took %.2f milliseconds\n", nextTime - prevTime);
 
@@ -38,11 +39,18 @@ int main(int argc, char** argv) {
    pageRank(&sm, array);
    nextTime = getTimeMillis();
    printf("Calculating the Page Rank took %.2f milliseconds\n", nextTime - prevTime);
+   int *array;
+   array = (int *) malloc(sm.width * sizeof(int));*/
+   pageRank(&sm, array);
 
    for(int i = 0; i < sm.width; i++) {
       printf("%s, %.5e\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }
 
 //   graph.printMatrix(sm);
+//   for(int i = 0; i < graph.indexToName.size(); i++) {
+//      cout << graph.indexToName[i] << endl;
+//   }
+   //cout << graph.indexToName.size() << endl;
    return 0;
 }

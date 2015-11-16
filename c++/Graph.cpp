@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "Node.h"
+#include <ctype.h>
 
 using namespace std;
 
@@ -145,30 +146,33 @@ int Graph::parseWord(char *fromString, char *toString) {
       c = *fromString++;
    }
 
-   while(contLoop) {
-      if(c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || keepSpace && c == ' ') {
+   while(c != 0) {
+      /*if((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (keepSpace && c == ' ') || c == '(' || c == ')' || c == '&'
+              || c == '-') {
          toString[wordNdx++] = c;
-      }
-      else if(c >= 'A' && c <= 'Z') {
+      }*/
+      if(c >= 'A' && c <= 'Z') {
          toString[wordNdx++] = c + 32;
+      } else if(((keepSpace && c != ',') || (!keepSpace && c != ' ' && c != '\t')) && c != '"' && c != 0) {
+         toString[wordNdx++] = c;
       }
       else {
          toString[wordNdx++] = 0;
          //Chew up the last "
          if(keepSpace) {
             c = *fromString++;
-            wordNdx;
          }
 
          //Chew up spaces and , to prepare next char arr
-         while(c == ' ' || c == ',') {
+         while(c == ' ' || c == ',' || c == '\t') {
             c = *fromString++;
             wordNdx++;
          }
-         return wordNdx;
+         return wordNdx - 1;
       }
       c = *fromString++;
    }
+   toString[wordNdx++]  = 0;
 
    //This will never be hit since I never change contLoop
    //While loop should return on its own...

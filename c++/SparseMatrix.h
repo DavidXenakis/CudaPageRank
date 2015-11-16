@@ -17,7 +17,7 @@ public:
    float *devVal;
    float *sortedPrestigeVector;
    std::string * indexToName;
-   SparseMatrix(float *, int *, int *, int , int , std::string *);
+   SparseMatrix(float *cVA, int *cRIA, int *cCIA, int w, int n, std::string * iTN);
 };
 
 #endif
