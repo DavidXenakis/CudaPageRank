@@ -38,8 +38,6 @@ int main(int argc, char** argv) {
    pageRank(&sm, array);
    nextTime = getTimeMillis();
    printf("Calculating the Page Rank took %.2f milliseconds\n", nextTime - prevTime);
-   int *array;
-   array = (int *) malloc(sm.width * sizeof(int));
    pageRank(&sm, array);
 
    for(int i = 0; i < sm.width; i++) {
