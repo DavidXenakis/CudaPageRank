@@ -19,6 +19,7 @@ public:
    int size();
    SparseMatrix createSparseMatrix();
    void printMatrix(SparseMatrix sm);
+   vector<string> indexToName;
 private:
    int parseWord(char *fromString, char *toString);
 };
