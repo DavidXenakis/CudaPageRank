@@ -8,6 +8,18 @@ unordered_map<string, Node*> namesToIndex;
 vector<string> indexToName;
 int numEdges = 0;
 
+bool findInVector(string str) {
+   bool returnVal = false;
+   cout << "HEY " << str << endl;
+   for(int i = 0; i < indexToName.size(); i++) {
+      cout << "yeah: " << str <<endl;
+      if(str.compare(indexToName[i]) == 0) {
+         return true;
+      }
+   }
+   return returnVal;
+}
+
 void Graph::printMatrix(SparseMatrix sm) {
    for(int i = 0; i < sm.nnz; i++) {
       cout << sm.cooValA[i] << " ";
@@ -61,8 +73,8 @@ void Graph::scanFile(string fileName, bool csvFile) {
    int index = 0;
    int count = 0;
    char oneline[512];
-   char firstWord[50];
-   char secondWord[50];
+   char *firstWord;
+   char *secondWord;
    int firstIndex = -1;
    int secondIndex = -1;
    unordered_map<std::string,Node*>::const_iterator gotFirst;
@@ -75,6 +87,8 @@ void Graph::scanFile(string fileName, bool csvFile) {
    inFile.getline(oneline, 512);
    while (inFile)
    {
+      firstWord = (char *)calloc(1, 50);
+      secondWord = (char *)calloc(1, 50);
       lineNdx = 0;
 
       if(oneline[0] == '#') {
@@ -91,29 +105,30 @@ void Graph::scanFile(string fileName, bool csvFile) {
 
       //saving the second node
       lineNdx = parseWord(lineNdx, secondWord);
-      if(namesToIndex.find(firstWord) == namesToIndex.end()) { //first word not in hashmap
+      if(namesToIndex.find(string(firstWord)) == namesToIndex.end() /*findInVector(string(firstWord)) == false*/) { //first word not in hashmap
 
          count++;
          firstIndex = index++;
-         indexToName.push_back(firstWord);
+         indexToName.push_back(string(firstWord));
          Node *tempFirst = new Node(firstIndex);
-         //namesToIndex[firstWord] = tempFirst;
-         namesToIndex.insert(std::make_pair<std::string,Node*>(string(firstWord),tempFirst));
+         namesToIndex[string(firstWord)] = tempFirst;
       } else { //in hashmap
-         firstIndex = namesToIndex[firstWord]->index;/*gotFirst->second->index;*/
+         firstIndex = namesToIndex.find(string(firstWord))->second->index;
+        // firstIndex = namesToIndex[string(firstWord)]->index;/*gotFirst->second->index;*/
       }
 
-      if(namesToIndex.find(secondWord) == namesToIndex.end()) { //second word not in hashmap
+      if(namesToIndex.find(string(secondWord)) == namesToIndex.end() /*!findInVector(string(secondWord)) == false*/) { //second word not in hashmap
          count++;
          secondIndex = index++;
-         indexToName.push_back(secondWord);
+         indexToName.push_back(string(secondWord));
          Node *tempSecond = new Node(secondIndex);
 //         tempSecond->index = secondIndex;
-         //namesToIndex[secondWord] = tempSecond;
-         namesToIndex.insert(std::make_pair<std::string,Node*>(string(secondWord),tempSecond));
+
+         namesToIndex[string(secondWord)] = tempSecond;
 
       } else { //in hashmap
-         secondIndex = namesToIndex[secondWord]->index;/*gotSecond->second->index;*/
+         secondIndex = namesToIndex.find(string(secondWord))->second->index;
+         //secondIndex = namesToIndex[string(secondWord)]->index;/*gotSecond->second->index;*/
       }
       numEdges++;
       namesToIndex[secondWord]->edges.push(firstIndex);
