@@ -18,7 +18,7 @@ returns a dense vector of ranks
 #include <thrust/sort.h>
 #include "cusparse.h"
 
-#define QUADRATIC_ERROR .0001
+#define QUADRATIC_ERROR .001
 #define DAMPING_FACTOR .85
 #define THREADS_PER_BLOCK 1024
 #ifdef MIC
@@ -35,8 +35,14 @@ float vectorSubtractAndNormalize2(float *v, float *last_v, int n) {
 #ifdef GPU
 __global__ void subtractAndSquare(float *vectNew, float *vect, float *dest, int *n) {
    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-   if (idx < n[0])
-      dest[idx] = (vectNew[idx] - vect[idx]) * (vectNew[idx] - vect[idx]);
+   float val;
+   if (idx < n[0]){
+      val = (vectNew[idx] - vect[idx]);// * (vectNew[idx] - vect[idx]);
+      /*
+      dest[idx] = val * val;
+      */
+      dest[idx] = val < 0 ? val * -1.0 : val;
+   }
 }
 #endif
 
@@ -78,7 +84,8 @@ float vectorSubtractAndNormalize2(float *devVectNew, float *devVect, int n) {
    }
    #endif
 */
-   return sqrtf(sum);
+   //return sqrtf(sum);
+   return sum;
 }
 #endif
 
@@ -137,20 +144,36 @@ void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float
 }
 #endif
 
-__global__ void MXplusBKernel(int n, float m, float *x, float b) {
+__global__ void MXKernel(int n, float m, float *x) {
    int i = blockIdx.x*blockDim.x + threadIdx.x;
    if (i < n) {
-      x[i] = m * x[i] + b;
+      x[i] = m * x[i];
    }
 }
 
-void sparse_MXplusB(SparseMatrix *M, float m, float b) {
+__global__ void XplusBKernel(int n, float *x, float b) {
+   int i = blockIdx.x*blockDim.x + threadIdx.x;
+   if (i < n) {
+      x[i] = x[i] + b;
+   }
+}
+
+void sparse_MX(SparseMatrix *M, float m) {
    int numBlocks = (M->nnz + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
    dim3 gridDim(numBlocks, 1);
    dim3 blockDim(THREADS_PER_BLOCK, 1);
 
-   MXplusBKernel<<<gridDim, blockDim>>>(M->nnz, m, M->devVal, b);
+   MXKernel<<<gridDim, blockDim>>>(M->nnz, m, M->devVal);
+}
+
+void sparse_XplusB(float *devVect, int width, float b) {
+   int numBlocks = (width + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+   dim3 gridDim(numBlocks, 1);
+   dim3 blockDim(THREADS_PER_BLOCK, 1);
+
+   XplusBKernel<<<gridDim, blockDim>>>(width, devVect, b);
 }
 
 void pageRank(SparseMatrix *M, int *array) {
@@ -166,13 +189,18 @@ void pageRank(SparseMatrix *M, int *array) {
    cusparseCreate(&handle);
 
    putMatOnDevice(M, handle);
-   sparse_MXplusB(M, DAMPING_FACTOR, (1.0f - DAMPING_FACTOR) / n);
+   sparse_MX(M, DAMPING_FACTOR);
    convertCOO2CSR(M, handle);
-   //int iter = 0;
+
+   float b = (1.0f - DAMPING_FACTOR) / n;
+   printf("b = %f\n", b);
+   int iter = 0;
 
    float error;
    do {
       sparse_MatrixVectorMultiply(M, handle, vect, newVect, &devVect, &devVectNew);
+
+      sparse_XplusB(devVectNew, n, b);
 
       error = vectorSubtractAndNormalize2(devVectNew, devVect, n);
 
@@ -184,22 +212,24 @@ void pageRank(SparseMatrix *M, int *array) {
       temp = devVectNew;
       devVectNew = devVect;
       devVect = temp;
-      //printf("Iteration: %d... Error: %.4f\n", iter++, error);
+      printf("Iteration: %d... Error: %.4f\n", iter++, error);
       
    } while (error > QUADRATIC_ERROR);
 
+   cudaMemcpy(vect, devVect, n * sizeof(float), cudaMemcpyDeviceToHost);
+
    cudaFree(devVectNew);
+   cudaFree(devVect);
    cudaFree(M->devVal);
    cudaFree(M->devRowPtr);
    cudaFree(M->devColInd);
    
    free(newVect);
-
    for(int i = 0; i < M->width; i++) {
       array[i] = i;
    }
 
-   thrust::stable_sort_by_key(vect, vect + M->width, array, thrust::greater<float>());
+   thrust::stable_sort_by_key(vect, vect + n, array, thrust::greater<float>());
 
    M->sortedPrestigeVector = vect;
 }

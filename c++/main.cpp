@@ -16,6 +16,6 @@ int main(int argc, char** argv) {
       printf("%s, %.5e\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }
 
-   //graph.printMatrix(sm);
+   graph.printMatrix(sm);
    return 0;
 }

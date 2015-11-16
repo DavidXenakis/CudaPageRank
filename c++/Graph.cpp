@@ -8,15 +8,15 @@ vector<string> indexToName;
 int numEdges = 0;
 
 void Graph::printMatrix(SparseMatrix sm) {
-   for(int i = 0; i < sm.width; i++) {
+   for(int i = 0; i < sm.nnz; i++) {
       cout << sm.cooValA[i] << " ";
    }
    cout << endl;
-   for(int i = 0; i< sm.width;i ++) {
+   for(int i = 0; i< sm.nnz;i ++) {
       cout << sm.cooRowIndA[i] << " ";
    }
    cout << endl;
-   for (int i = 0; i < sm.width; i ++) {
+   for (int i = 0; i < sm.nnz; i ++) {
       cout << sm.cooColIndA[i] << " ";
    }
    cout << endl;
