@@ -76,9 +76,13 @@ public class PageRank {
 	public void getPageRanks() {
 		Collection<Node> entries = graph.nodes.values();
 		startTime = System.currentTimeMillis();
+		System.out.println("SIZE " + size);
 		boolean done = false;
 		double totalSum = 0.0;
 		boolean firstIter = true;
+		for(Node node : entries) {
+			pageRank.put(node, 1.0 / size);
+		}
 		while(!done) {
 			numIter++;
 			totalSum = 0.0;
@@ -86,7 +90,6 @@ public class PageRank {
 				double num = pageRank(node);
 				totalSum += Math.abs(num - pageRank.get(node));
 				node.pageRank = num;
-				//pageRank.put(node, num);
 			}
 			for(Node node : entries) {
 				pageRank.put(node, node.pageRank);
@@ -104,11 +107,6 @@ public class PageRank {
 	private double pageRank(Node node) {
 		double newPagerank = 0.0;
 		double sum = 0.0;
-		if(pageRank.get(node) == null) {
-			pageRank.put(node, 1.0 / size);
-			return 1.0 / size;
-		}
-		
 		for(int i = 0; i < node.inlinks.size(); i++) {
 			sum += (1.0 / node.inlinks.get(i).outlinks.size()) * pageRank.get(node.inlinks.get(i));
 		}
