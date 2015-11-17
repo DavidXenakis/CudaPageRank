@@ -139,15 +139,18 @@ void Graph::scanFile(string fileName, bool csvFile, bool directed, bool invert) 
          secondIndex = namesToIndex.find(secondWordString)->second->index;
          //secondIndex = namesToIndex[string(secondWord)]->index;/*gotSecond->second->index;*/
       }
-      numEdges++;
       Node *secondNode = namesToIndex[secondWordString];
       Node *firstNode = namesToIndex[firstWordString];
       if(invert && directed) {
-         firstNode->edges.push(secondIndex);
-         firstNode->edgeMap[secondIndex] = 1;
-         secondNode->numOutlinks++;
+         if(firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
+            numEdges++;
+            firstNode->edges.push(secondIndex);
+            firstNode->edgeMap[secondIndex] = 1;
+            secondNode->numOutlinks++;
+         }
       } else {
          if(secondNode->edgeMap.find(firstIndex) == secondNode->edgeMap.end()) {
+            numEdges++;
             secondNode->edges.push(firstIndex);
             secondNode->edgeMap[firstIndex] = 1;
             firstNode->numOutlinks++;
