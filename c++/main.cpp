@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
       }
    }
    prevTime = getTimeMillis();
-   Graph graph = Graph::Graph(string(argv[1]), true, false);
+   Graph graph = Graph::Graph(string(argv[1]), directed, invert);
    nextTime = getTimeMillis();
    printf("Graph creation took %.2f milliseconds\n", nextTime - prevTime);
 
@@ -41,15 +41,15 @@ int main(int argc, char** argv) {
    array = (int *) malloc(sm.width * sizeof(int));
 
    prevTime = getTimeMillis();
-   //pageRank(&sm, array);
+   pageRank(&sm, array);
    nextTime = getTimeMillis();
    printf("Calculating the Page Rank took %.2f milliseconds\n", nextTime - prevTime);
 
-   /*for(int i = 0; i < sm.width; i++) {
+   for(int i = 0; i < sm.width; i++) {
       printf("%s, %f\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
-   }*/
+   }
 
-   graph.printMatrix(sm);
+   //graph.printMatrix(sm);
 
 //   cout << graph.indexToName.size() << endl;
 
