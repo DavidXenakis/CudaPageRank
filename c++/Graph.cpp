@@ -6,18 +6,24 @@ using namespace std;
 
 unordered_map<string, Node*> namesToIndex;
 vector<string> indexToName;
+bool csvFile = false;
 int numEdges = 0;
 
-bool findInVector(string str) {
-   bool returnVal = false;
-   cout << "HEY " << str << endl;
+string trim(string str)
+{
+   size_t first = str.find_first_not_of(' ');
+   size_t last = str.find_last_not_of(' ');
+   return str.substr(first, (last-first+1));
+}
+
+bool Graph::findInVector(string str) {
+
    for(int i = 0; i < indexToName.size(); i++) {
-      cout << "yeah: " << str <<endl;
-      if(str.compare(indexToName[i]) == 0) {
+      if(indexToName[i].compare(str) == 0) {
          return true;
       }
    }
-   return returnVal;
+   return false;
 }
 
 void Graph::printMatrix(SparseMatrix sm) {
@@ -58,6 +64,7 @@ Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
    if(!fileType.compare("csv")) {
       scanFile(fileName, true);
+      csvFile = true;
    }
    else if(!fileType.compare("txt"))
       scanFile(fileName, false);
@@ -105,33 +112,35 @@ void Graph::scanFile(string fileName, bool csvFile) {
 
       //saving the second node
       lineNdx = parseWord(lineNdx, secondWord);
-      if(namesToIndex.find(string(firstWord)) == namesToIndex.end() /*findInVector(string(firstWord)) == false*/) { //first word not in hashmap
+      string firstWordString = trim(string(firstWord));
+      string secondWordString = trim(string(secondWord));
+      if(namesToIndex.find(string(firstWordString)) == namesToIndex.end()) { //first word not in hashmap
          count++;
          firstIndex = index++;
-         indexToName.push_back(string(firstWord));
+         indexToName.push_back(firstWordString);
          Node *tempFirst = new Node(firstIndex);
-         namesToIndex[string(firstWord)] = tempFirst;
+         namesToIndex[firstWordString] = tempFirst;
       } else { //in hashmap
-         firstIndex = namesToIndex.find(string(firstWord))->second->index;
+         firstIndex = namesToIndex.find(firstWordString)->second->index;
         // firstIndex = namesToIndex[string(firstWord)]->index;/*gotFirst->second->index;*/
       }
 
-      if(namesToIndex.find(string(secondWord)) == namesToIndex.end() /*!findInVector(string(secondWord)) == false*/) { //second word not in hashmap
+      if(namesToIndex.find(secondWordString) == namesToIndex.end()) { //second word not in hashmap
          count++;
          secondIndex = index++;
-         indexToName.push_back(string(secondWord));
+         indexToName.push_back(secondWordString);
          Node *tempSecond = new Node(secondIndex);
 //         tempSecond->index = secondIndex;
 
-         namesToIndex[string(secondWord)] = tempSecond;
+         namesToIndex[secondWordString] = tempSecond;
 
       } else { //in hashmap
-         secondIndex = namesToIndex.find(string(secondWord))->second->index;
+         secondIndex = namesToIndex.find(secondWordString)->second->index;
          //secondIndex = namesToIndex[string(secondWord)]->index;/*gotSecond->second->index;*/
       }
       numEdges++;
-      namesToIndex[secondWord]->edges.push(firstIndex);
-      namesToIndex[firstWord]->numOutlinks++;
+      namesToIndex[secondWordString]->edges.push(firstIndex);
+      namesToIndex[firstWordString]->numOutlinks++;
 
 //      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord]->index;
 //      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord]->index << endl;
@@ -170,7 +179,7 @@ char* Graph::parseWord(char *fromString, char *toString) {
       }*/
       if(c >= 'A' && c <= 'Z') {
          toString[wordNdx++] = c + 32;
-      } else if((c != '"' && c != 0 && c != ' ' && c != ',' && c != '\t') || (keepSpace && c == ' ')) {
+      } else if((c != '"' && c != 0 && c != ' ' && c != ',' && c != '\t' && c != '\r' && c != '\n') || (keepSpace && c == ' ')) {
          toString[wordNdx++] = c;
       }
       else {

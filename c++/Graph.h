@@ -20,6 +20,7 @@ public:
    SparseMatrix createSparseMatrix();
    void printMatrix(SparseMatrix sm);
    vector<string> indexToName;
+   bool findInVector(string str);
 private:
     char* parseWord(char *fromString, char *toString);
 };
