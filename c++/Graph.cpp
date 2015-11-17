@@ -61,14 +61,14 @@ SparseMatrix Graph::createSparseMatrix() {
    return SparseMatrix(vals, rowIndex, colIndex, indexToName.size(), numEdges, &indexToName[0]);
 }
 
-Graph::Graph(string fileName, bool directed) {
+Graph::Graph(string fileName, bool directed, bool invert) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
    if(!fileType.compare("csv")) {
-      scanFile(fileName, true, directed);
+      scanFile(fileName, true, directed, invert);
       csvFile = true;
    }
    else if(!fileType.compare("txt"))
-      scanFile(fileName, false, directed);
+      scanFile(fileName, false, directed, invert);
    else {
       cerr << "This file is not supported." << endl;
       exit(1);
@@ -76,7 +76,7 @@ Graph::Graph(string fileName, bool directed) {
 
 }
 
-void Graph::scanFile(string fileName, bool csvFile, bool directed) {
+void Graph::scanFile(string fileName, bool csvFile, bool directed, bool invert) {
    ifstream inFile (fileName, ifstream::in);
    int index = 0;
    int count = 0;
@@ -142,15 +142,27 @@ void Graph::scanFile(string fileName, bool csvFile, bool directed) {
       numEdges++;
       Node *secondNode = namesToIndex[secondWordString];
       Node *firstNode = namesToIndex[firstWordString];
-      secondNode->edges.push(firstIndex);
-      secondNode->edgeMap[firstIndex] = 1;
-      firstNode->numOutlinks++;
-
-      if(directed == false && firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
-         numEdges++;
+      if(invert) {
          firstNode->edges.push(secondIndex);
          firstNode->edgeMap[secondIndex] = 1;
          secondNode->numOutlinks++;
+      } else {
+         secondNode->edges.push(firstIndex);
+         secondNode->edgeMap[firstIndex] = 1;
+         firstNode->numOutlinks++;
+      }
+
+      if(directed == false && firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
+         numEdges++;
+         if(invert) {
+            secondNode->edges.push(firstIndex);
+            secondNode->edgeMap[firstIndex] = 1;
+            firstNode->numOutlinks++;
+         } else {
+            firstNode->edges.push(secondIndex);
+            firstNode->edgeMap[secondIndex] = 1;
+            secondNode->numOutlinks++;
+         }
       }
 
 //      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord]->index;

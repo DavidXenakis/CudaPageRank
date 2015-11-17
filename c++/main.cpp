@@ -18,9 +18,17 @@ double getTimeMillis() {
 
 int main(int argc, char** argv) {
    double prevTime, nextTime;
-
+   bool invert = false, directed = true;
+   if(argc == 4) {
+      if(strcmp(argv[2], "false") == 0) {
+         directed = false;
+      }
+      if(strcmp(argv[3], "true") == 0) {
+         invert = true;
+      }
+   }
    prevTime = getTimeMillis();
-   Graph graph = Graph::Graph(string(argv[1]), true);
+   Graph graph = Graph::Graph(string(argv[1]), true, false);
    nextTime = getTimeMillis();
    printf("Graph creation took %.2f milliseconds\n", nextTime - prevTime);
 

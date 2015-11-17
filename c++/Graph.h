@@ -14,8 +14,8 @@ class Graph {
 public:
    //The last three parameters are default parameters. If not called with those parameters,
    //function call will default to giving them these values
-   Graph(string fileName, bool directed = true);
-   void scanFile(string fileName, bool csvFile, bool directed);
+   Graph(string fileName, bool directed = true, bool invert = false);
+   void scanFile(string fileName, bool csvFile, bool directed, bool invert);
    int size();
    SparseMatrix createSparseMatrix();
    void printMatrix(SparseMatrix sm);
