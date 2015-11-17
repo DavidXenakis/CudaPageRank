@@ -143,13 +143,17 @@ void Graph::scanFile(string fileName, bool csvFile, bool directed, bool invert) 
       Node *secondNode = namesToIndex[secondWordString];
       Node *firstNode = namesToIndex[firstWordString];
       if(invert && directed) {
-         firstNode->edges.push(secondIndex);
-         firstNode->edgeMap[secondIndex] = 1;
-         secondNode->numOutlinks++;
+         if(firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
+            firstNode->edges.push(secondIndex);
+            firstNode->edgeMap[secondIndex] = 1;
+            secondNode->numOutlinks++;
+         }
       } else {
-         secondNode->edges.push(firstIndex);
-         secondNode->edgeMap[firstIndex] = 1;
-         firstNode->numOutlinks++;
+         if(secondNode->edgeMap.find(firstIndex) == secondNode->edgeMap.end()) {
+            secondNode->edges.push(firstIndex);
+            secondNode->edgeMap[firstIndex] = 1;
+            firstNode->numOutlinks++;
+         }
       }
 
       if(directed == false && firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
