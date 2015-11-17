@@ -18,8 +18,8 @@ returns a dense vector of ranks
 #include <thrust/sort.h>
 #include "cusparse.h"
 
-#define QUADRATIC_ERROR .01
-#define DAMPING_FACTOR .95
+#define QUADRATIC_ERROR .001
+#define DAMPING_FACTOR .85
 #define THREADS_PER_BLOCK 1024
 
 #ifdef MIC
@@ -105,7 +105,7 @@ void putMatOnDevice(SparseMatrix *M, cusparseHandle_t handle) {
 }
 
 #ifdef GPU
-void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float *vect, float *newVect, float *devVect, float *devVectNew) {
+void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float *devVect, float *devVectNew) {
    float alpha = 1.0f;
    float beta = 0.0f;
 
@@ -114,13 +114,9 @@ void sparse_MatrixVectorMultiply(SparseMatrix *M, cusparseHandle_t handle, float
    cusparseSetMatType(descr,CUSPARSE_MATRIX_TYPE_GENERAL);
    cusparseSetMatIndexBase(descr,CUSPARSE_INDEX_BASE_ZERO);
 
-   // Check to see if the prestige vector is already on card
-
    cusparseOperation_t op = CUSPARSE_OPERATION_NON_TRANSPOSE;
    cusparseScsrmv(handle, op, M->width, M->width, M->nnz, &alpha,
          descr, M->devVal, M->devRowPtr, M->devColInd, devVect, &beta, devVectNew); 
-
-   //cudaMemcpy(newVect, *devVectNew, vectWidth * sizeof(float), cudaMemcpyDeviceToHost);
 }
 #endif
 
@@ -161,7 +157,7 @@ void pageRank(SparseMatrix *M, int *array) {
    printf("Width: %d\n", n);
    float *vect = (float *) malloc(sizeof(float) * n);
    std::fill(vect, vect + n, 1.0f / n);
-   float *newVect = (float *) malloc(sizeof(float) * n);
+   //float *newVect = (float *) malloc(sizeof(float) * n);
    float *difference = (float *) malloc(n * sizeof(float));
    float *devDifference = NULL;
    float *devVect = NULL;
@@ -184,27 +180,28 @@ void pageRank(SparseMatrix *M, int *array) {
 
    float error;
    do {
-      sparse_MatrixVectorMultiply(M, handle, vect, newVect, devVect, devVectNew);
+      sparse_MatrixVectorMultiply(M, handle, devVect, devVectNew);
 
       sparse_XplusB(devVectNew, n, b);
 
       error = vectorSubtractAndNormalize2(devVectNew, devVect, devDifference, difference, n);
 
       // Swap old and new vectors to reuse space
+      /*
       float *temp = newVect;
       newVect = vect;
       vect = temp;
-
-      temp = devVectNew;
+      */
+      float *temp = devVectNew;
       devVectNew = devVect;
       devVect = temp;
-      printf("Iteration: %d... Error: %.4f\n", iter++, error);
+      printf("Iteration: %d... Error: %.7f\n", iter++, error);
       
    } while (error > QUADRATIC_ERROR);
 
    cudaMemcpy(vect, devVect, n * sizeof(float), cudaMemcpyDeviceToHost);
 
-   cudaFree(devVectNew);
+   //cudaFree(devVectNew);
    cudaFree(devVect);
    cudaFree(M->devVal);
    cudaFree(M->devRowPtr);
@@ -212,7 +209,7 @@ void pageRank(SparseMatrix *M, int *array) {
    cudaFree(devDifference);
 
    free(difference); 
-   free(newVect);
+   //free(newVect);
 
    for(int i = 0; i < M->width; i++) {
       array[i] = i;

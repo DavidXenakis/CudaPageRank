@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
       printf("%s, %f\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }*/
 
-   graph.printMatrix(sm);
+   //graph.printMatrix(sm);
 
 //   cout << graph.indexToName.size() << endl;
 
