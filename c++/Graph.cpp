@@ -27,7 +27,7 @@ bool Graph::findInVector(string str) {
 }
 
 void Graph::printMatrix(SparseMatrix sm) {
-   /*for(int i = 0; i < sm.nnz; i++) {
+   for(int i = 0; i < sm.nnz; i++) {
       cout << sm.cooValA[i] << " ";
    }
    cout << endl;
@@ -38,8 +38,7 @@ void Graph::printMatrix(SparseMatrix sm) {
    for (int i = 0; i < sm.nnz; i ++) {
       cout << sm.cooColIndA[i] << " ";
    }
-   cout << endl;*/
-   cout << numEdges << endl;
+   cout << endl;
 }
 
 SparseMatrix Graph::createSparseMatrix() {
