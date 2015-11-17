@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
    double prevTime, nextTime;
 
    prevTime = getTimeMillis();
-   Graph graph = Graph::Graph(string(argv[1]));
+   Graph graph = Graph::Graph(string(argv[1]), true);
    nextTime = getTimeMillis();
    printf("Graph creation took %.2f milliseconds\n", nextTime - prevTime);
 

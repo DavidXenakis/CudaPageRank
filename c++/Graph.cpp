@@ -27,7 +27,7 @@ bool Graph::findInVector(string str) {
 }
 
 void Graph::printMatrix(SparseMatrix sm) {
-   for(int i = 0; i < sm.nnz; i++) {
+   /*for(int i = 0; i < sm.nnz; i++) {
       cout << sm.cooValA[i] << " ";
    }
    cout << endl;
@@ -38,7 +38,8 @@ void Graph::printMatrix(SparseMatrix sm) {
    for (int i = 0; i < sm.nnz; i ++) {
       cout << sm.cooColIndA[i] << " ";
    }
-   cout << endl;
+   cout << endl;*/
+   cout << numEdges << endl;
 }
 
 SparseMatrix Graph::createSparseMatrix() {
@@ -61,14 +62,14 @@ SparseMatrix Graph::createSparseMatrix() {
    return SparseMatrix(vals, rowIndex, colIndex, indexToName.size(), numEdges, &indexToName[0]);
 }
 
-Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
+Graph::Graph(string fileName, bool directed) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
    if(!fileType.compare("csv")) {
-      scanFile(fileName, true, false);
+      scanFile(fileName, true, directed);
       csvFile = true;
    }
    else if(!fileType.compare("txt"))
-      scanFile(fileName, false, false);
+      scanFile(fileName, false, directed);
    else {
       cerr << "This file is not supported." << endl;
       exit(1);

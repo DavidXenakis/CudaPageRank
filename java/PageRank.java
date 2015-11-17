@@ -76,7 +76,6 @@ public class PageRank {
 	public void getPageRanks() {
 		Collection<Node> entries = graph.nodes.values();
 		startTime = System.currentTimeMillis();
-		System.out.println("SIZE " + size);
 		boolean done = false;
 		double totalSum = 0.0;
 		boolean firstIter = true;
@@ -94,7 +93,6 @@ public class PageRank {
 			for(Node node : entries) {
 				pageRank.put(node, node.pageRank);
 			}
-			System.out.println(totalSum);
 			if(totalSum < 0.001 && !firstIter) {
 				done = true;
 				endTime = System.currentTimeMillis();

@@ -19,7 +19,7 @@ public class Main {
 			System.out.println(e.getMessage());
 			return;
 		}
-		Graph graph = new Graph(fileName, true, false, writeTo);
+		Graph graph = new Graph(fileName, false, false, writeTo);
 		PageRank pageRank = new PageRank(graph);
 		long time = System.currentTimeMillis();		
 		pageRank.getPageRanks();
