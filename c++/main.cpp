@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
          invert = true;
       }
    }
+   cout << "directed: " << directed <<endl;
+   cout << "inverted: " << invert << endl;
    prevTime = getTimeMillis();
    Graph graph = Graph::Graph(string(argv[1]), directed, invert);
    nextTime = getTimeMillis();
