@@ -142,7 +142,7 @@ void Graph::scanFile(string fileName, bool csvFile, bool directed, bool invert) 
       numEdges++;
       Node *secondNode = namesToIndex[secondWordString];
       Node *firstNode = namesToIndex[firstWordString];
-      if(invert) {
+      if(invert && directed) {
          firstNode->edges.push(secondIndex);
          firstNode->edgeMap[secondIndex] = 1;
          secondNode->numOutlinks++;
@@ -154,15 +154,9 @@ void Graph::scanFile(string fileName, bool csvFile, bool directed, bool invert) 
 
       if(directed == false && firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
          numEdges++;
-         if(invert) {
-            secondNode->edges.push(firstIndex);
-            secondNode->edgeMap[firstIndex] = 1;
-            firstNode->numOutlinks++;
-         } else {
-            firstNode->edges.push(secondIndex);
-            firstNode->edgeMap[secondIndex] = 1;
-            secondNode->numOutlinks++;
-         }
+         firstNode->edges.push(secondIndex);
+         firstNode->edgeMap[secondIndex] = 1;
+         secondNode->numOutlinks++;
       }
 
 //      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord]->index;
