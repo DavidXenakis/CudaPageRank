@@ -46,6 +46,7 @@ SparseMatrix Graph::createSparseMatrix() {
    int *colIndex = (int *)malloc(sizeof(int) * numEdges);
    float *vals = (float *)malloc(sizeof(float) * numEdges);
    int valIndex = 0;
+   int undirected = true;
    for(int i = 0; i < indexToName.size(); i++) {
       string nodeName = indexToName[i];
       Node *tempNode = namesToIndex[nodeName];
@@ -63,11 +64,11 @@ SparseMatrix Graph::createSparseMatrix() {
 Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
    string fileType = fileName.substr(fileName.length() - 3, fileName.length());
    if(!fileType.compare("csv")) {
-      scanFile(fileName, true);
+      scanFile(fileName, true, false);
       csvFile = true;
    }
    else if(!fileType.compare("txt"))
-      scanFile(fileName, false);
+      scanFile(fileName, false, false);
    else {
       cerr << "This file is not supported." << endl;
       exit(1);
@@ -75,7 +76,7 @@ Graph::Graph(string fileName, bool undirected, bool invert, FILE* writeTo) {
 
 }
 
-void Graph::scanFile(string fileName, bool csvFile) {
+void Graph::scanFile(string fileName, bool csvFile, bool directed) {
    ifstream inFile (fileName, ifstream::in);
    int index = 0;
    int count = 0;
@@ -139,8 +140,18 @@ void Graph::scanFile(string fileName, bool csvFile) {
          //secondIndex = namesToIndex[string(secondWord)]->index;/*gotSecond->second->index;*/
       }
       numEdges++;
-      namesToIndex[secondWordString]->edges.push(firstIndex);
-      namesToIndex[firstWordString]->numOutlinks++;
+      Node *secondNode = namesToIndex[secondWordString];
+      Node *firstNode = namesToIndex[firstWordString];
+      secondNode->edges.push(firstIndex);
+      secondNode->edgeMap[firstIndex] = 1;
+      firstNode->numOutlinks++;
+
+      if(directed == false && firstNode->edgeMap.find(secondIndex) == firstNode->edgeMap.end()) {
+         numEdges++;
+         firstNode->edges.push(secondIndex);
+         firstNode->edgeMap[secondIndex] = 1;
+         secondNode->numOutlinks++;
+      }
 
 //      cout << "First Node: " << firstWord << " at " << namesToIndex[firstWord]->index;
 //      cout << "; Second Node: " << secondWord <<  " at " << namesToIndex[secondWord]->index << endl;

@@ -1,12 +1,2 @@
-d	b
-e	b
-e	d
-a	b  
-a	c  
-a	d
-a	e
-b	a
-c	b
-d	b
-e	b
-e	d
+a	b
+c	d

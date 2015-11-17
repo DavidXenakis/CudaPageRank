@@ -15,7 +15,7 @@ public:
    //The last three parameters are default parameters. If not called with those parameters,
    //function call will default to giving them these values
    Graph(string fileName, bool undirected = 0, bool invert = 0, FILE* writeTo = NULL);
-   void scanFile(string fileName, bool csvFile);
+   void scanFile(string fileName, bool csvFile, bool directed);
    int size();
    SparseMatrix createSparseMatrix();
    void printMatrix(SparseMatrix sm);

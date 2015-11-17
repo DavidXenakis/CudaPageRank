@@ -7,6 +7,7 @@
 
 #include <string>
 #include <queue>
+#include <unordered_map>
 
 
 class CompareEdges {
@@ -21,6 +22,7 @@ public:
 class Node {
 public:
     std::priority_queue<int, vector<int>, CompareEdges> edges;
+    std::unordered_map<int, int> edgeMap;
     Node(int aIndex);
     Node();
     int numOutlinks;

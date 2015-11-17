@@ -41,13 +41,13 @@ int main(int argc, char** argv) {
       printf("%s, %f\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }*/
 
-   //graph.printMatrix(sm);
+   graph.printMatrix(sm);
 
-   cout << graph.indexToName.size() << endl;
+//   cout << graph.indexToName.size() << endl;
 
 //
-   for(int i = 0; i < graph.indexToName.size() && i < 10; i++) {
-      cout << graph.indexToName[i] << endl;
-   }
+//   for(int i = 0; i < graph.indexToName.size() && i < 10; i++) {
+//      cout << graph.indexToName[i] << endl;
+//   }
    return 0;
 }
