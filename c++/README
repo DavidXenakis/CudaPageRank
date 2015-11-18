@@ -1,0 +1,22 @@
+Pagerank Project
+David Xenakis, Matt Austin, Gabe Hernandez, Max Bendick
+
+To Compile Cuda Code
+make clean
+make main.o
+make cuda
+
+To run Cuda Code
+pageRankCuda <file> <true/false> <true/false>   
+                    Directed?    Invert?
+
+To Compile Mic Code
+make clean
+make main.o
+make mic
+
+To run Mic Code
+pageRankMic <file> <true/false> <true/false>   
+                   Directed?    Invert?
+
+
