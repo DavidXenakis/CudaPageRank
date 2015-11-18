@@ -42,16 +42,16 @@ int main(int argc, char** argv) {
    int *array;
    array = (int *) malloc(sm.width * sizeof(int));
 
+   //graph.printMatrix(sm);
    prevTime = getTimeMillis();
    pageRank(&sm, array);
    nextTime = getTimeMillis();
    printf("Calculating the Page Rank took %.2f milliseconds\n", nextTime - prevTime);
 
    for(int i = 0; i < sm.width; i++) {
-      printf("%s, %f\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
+      printf("%s, %.12f\n", sm.indexToName[array[i]].c_str(), sm.sortedPrestigeVector[i]);
    }
 
-   //graph.printMatrix(sm);
 
 //   cout << graph.indexToName.size() << endl;
 
